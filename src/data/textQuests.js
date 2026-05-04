@@ -4855,6 +4855,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Вы садитесь в баре, и вдруг все замолкают. За вашим столом - двое громил. Из тени выходит человек со шрамом. Дрейк. "Ты взял мои координаты и оставил гнить в камере. Это было ошибкой."',
+        img: 'quests/drake_revenge.png',
         ascii: [
           '  [DRAKE]     [THUG1]  [THUG2]',
           '    ___        ___      ___',
@@ -4916,6 +4917,7 @@ export const TEXT_QUESTS = [
       },
       fight_offer: {
         text: 'Вы опрокидываете стол! Первый громила получает стулом по голове. Второй замешкался. Дрейк отступает - он не боец, он мозг. "Стой! Может, мы договоримся по-другому."',
+        img: 'quests/drake_revenge_fight.png',
         options: [
           { text: '> Говори быстро', next: 'end_respect' },
           { text: '> Добить', next: 'end_fight_drake' },
@@ -5049,6 +5051,7 @@ export const TEXT_QUESTS = [
       },
       end_beaten: {
         text: 'Вас ограбили. 3000 кредитов, модуль повреждён. Дрейк сказал: "Теперь мы квиты." Дёшево отделались.',
+        img: 'quests/drake_revenge_aftermath.png',
         ending: true,
         result: { credits: -3000, damage: 20, flags: { drake_debt_paid: true } }
       },
@@ -5134,6 +5137,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Диспетчер станции машет рукой: "Есть срочный заказ. Контейнер с медикаментами для Центавры. Оплата 2500 кр по доставке. Но есть нюанс - у тебя 5 дней. После этого препараты испортятся, и заказчик выставит неустойку."',
+        img: 'quests/urgent_delivery.png',
         ascii: [
           '  > CONTRACT #7741',
           '  > DEST: CENTAURI',
@@ -5195,6 +5199,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Док Центавры. Приёмщик сверяет маркировку контейнера. "Медикаменты? Да, ждём."',
+        img: 'quests/urgent_delivery_complete.png',
         options: [
           { text: '> Вот ваш груз', next: 'deliver', check: { stat: 'timer', timerId: 'urgent_delivery', failNext: 'too_late' } },
         ]
@@ -5484,6 +5489,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Денеб. Лаборатория аномалий. На частоте экстренной связи - сообщение: "Пилот, это доктор Лира Вэн. Мне нужна помощь. Это не может ждать. Причал 7, лаборатория 12-Б. Придите одни."',
+        img: 'quests/echolocator.png',
         image: 'quest_echo_lab',
         options: [
           { text: 'Пойти в лабораторию', next: 'lira_office' },
@@ -5620,6 +5626,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Система Шпиль. Сканер Лиры начинает вибрировать ещё до выхода из варпа. Экран заливает зелёным - паттерны мечутся, будто устройство в панике.\n\nВпереди - структура. Маяк. Высокий, чёрный, покрытый символами, которые мерцают бирюзовым. Он висит в пустоте, не привязанный ни к какому небесному телу.',
+        img: 'quests/echolocator_scan.png',
         image: 'quest_echo_beacon',
         sound: 'echoScan',
         options: [
@@ -5765,6 +5772,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Крипта. Кладбище кораблей. Сотни остовов висят в пустоте - торговцы, военные, даже научные суда. Некоторые древние, покрытые космической пылью. Другие выглядят так, будто погибли вчера.\n\nСканер Лиры тянет вас глубже, мимо ржавых корпусов, к одному конкретному кораблю - старому линкору с тусклым светом в иллюминаторах.',
+        img: 'quests/echolocator.png',
         image: 'quest_echo_shadow',
         options: [
           { text: 'Пристыковаться', next: 'dock_wreck' },
@@ -5926,6 +5934,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Kernel. Сердце Глитча. Здесь реальность выглядит... неправильно. Звёзды мигают, будто пиксели с плохим контактом. Пространство иногда дёргается - как видео с потерянными кадрами.\n\nСканер Лиры выдаёт ошибку за ошибкой. Он не может обработать то, что видит. Слишком много данных. Слишком чистый сигнал.',
+        img: 'quests/echolocator_chamber.png',
         image: 'quest_echo_core',
         sound: 'echoGlitch',
         options: [
@@ -6139,6 +6148,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'На планете Heap обнаружен фрагмент дампа памяти. Данные повреждены, но кое-что можно восстановить.\n\n> READING SECTOR 0x4F2A...\n> WARNING: Data integrity 34%\n> FOUND: player_log.dat',
+        img: 'quests/memory_dump.png',
         options: [
           { text: '> cat player_log.dat', next: 'read_log' },
           { text: '> hexdump -C sector', next: 'hexdump' },
@@ -6147,6 +6157,7 @@ export const TEXT_QUESTS = [
       },
       read_log: {
         text: 'Лог чужого игрока. Запись от... вчера?\n\n"Я нашёл дыру в генераторе цен. Overflow на планете NULL. Покупаешь по NaN — получаешь бесплатно. Но после третьего раза...\n\n...после третьего раза ОНО заметило. Экран начал\n\n█████████████████████\n\nКОНЕЦ ЗАПИСИ. ФАЙЛ ПОВРЕЖДЁН."',
+        img: 'quests/memory_dump_fragments.png',
         options: [
           { text: 'Проверить дату файла', next: 'check_date' },
           { text: 'Искать другие логи', next: 'more_logs' },
@@ -6220,6 +6231,7 @@ export const TEXT_QUESTS = [
       },
       leave_reward: {
         text: 'Данные сохранены. Возможно, они пригодятся.\n\nВозможно, кто-то уже знает, что вы их взяли.',
+        img: 'quests/memory_dump_truth.png',
         ending: true,
         result: { credits: 300, flags: { memory_dump_complete: true } }
       },
@@ -6237,6 +6249,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Станция Loop. Всё повторяется.\n\nТорговец у стойки поднимает голову:\n"Добро пожаловать на Loop. Впервые здесь?"\n\nВы точно помните, что уже были тут. Он говорил те же слова. Тем же тоном.',
+        img: 'quests/infinite_loop.png',
         options: [
           { text: '"Я уже был здесь"', next: 'aware' },
           { text: '"Впервые"', next: 'loop_1' },
@@ -6261,6 +6274,7 @@ export const TEXT_QUESTS = [
       },
       aware: {
         text: 'Торговец медленно опускает руки.\n\n"Ты... помнишь итерации?"\n\nЕго лицо меняется. Становится серьёзным.\n\n"Это не должно быть возможно. Обычные единицы данных не сохраняют состояние между циклами."\n\n"Что ты такое?"',
+        img: 'quests/infinite_loop_deja.png',
         options: [
           { text: '"Я игрок"', next: 'player_reveal' },
           { text: '"А ты?"', next: 'npc_reveal' },
@@ -6269,6 +6283,7 @@ export const TEXT_QUESTS = [
       },
       break_loop: {
         text: '> BREAK\n> Exiting loop at iteration 4,782,319\n> Stack unwinding...\n> WARNING: Loop was load-bearing\n\nСтанция мерцает. На мгновение вы видите — за текстурами стен нет ничего. Чёрная пустота.\n\nПотом реальность "пересобирается". Торговец стоит, но его глаза — два белых прямоугольника.\n\n"Ты сломал цикл. Теперь эта итерация — последняя."',
+        img: 'quests/infinite_loop_break.png',
         options: [
           { text: 'Забрать, что можно', next: 'loot_loop' },
           { text: '"Запусти цикл заново"', next: 'restart_loop' },
@@ -6351,6 +6366,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Планета Root. Здесь чувствуется... вес. Каждый шаг тяжелее.\n\nТерминал на посадочной площадке светится красным:\n\n# whoami\nroot\n# _\n\nУ вас root-доступ. К ЧЕМУ — непонятно. Но курсор мигает, ожидая команды.',
+        img: 'quests/root_access.png',
         options: [
           { text: '> ls /', next: 'ls_root' },
           { text: '> cat /etc/passwd', next: 'passwd' },
@@ -6359,6 +6375,7 @@ export const TEXT_QUESTS = [
       },
       ls_root: {
         text: '/bin\n/dev\n/etc\n/home\n/proc\n/reality\n/players\n/tmp\n/var/log/universe\n\n...директория /reality. И /players.\n\nЭто не обычная файловая система.',
+        img: 'quests/root_access_core.png',
         options: [
           { text: '> ls /players', next: 'ls_players' },
           { text: '> ls /reality', next: 'ls_reality' },
@@ -6375,6 +6392,7 @@ export const TEXT_QUESTS = [
       },
       delete_everything: {
         text: '> sudo rm -rf /\n\n> Удаление /bin... OK\n> Удаление /dev... OK\n> Удаление /reality...\n\n> ОШИБКА: НЕВОЗМОЖНО УДАЛИТЬ СЕБЯ\n> ОШИБКА: РЕКУРСИВНЫЙ ПАРАДОКС\n> ОШИБКА: КТО УДАЛИТ УДАЛИТЕЛЯ?\n\nТерминал зависает. Потом:\n\n"Хорошая попытка. Но ты часть файловой системы.\nУдалить всё = удалить себя.\n\nА ты этого не хочешь. Правда?"',
+        img: 'quests/root_access_chase.png',
         options: [
           { text: '"А если хочу?"', next: 'want_deletion' },
           { text: '"Кто ты?"', next: 'who_system' },
@@ -6484,6 +6502,7 @@ export const TEXT_QUESTS = [
     nodes: {
       start: {
         text: 'Планета Kernel. Центр всего.\n\nЗдесь нет станций. Нет торговцев. Только огромная структура из белого света, пульсирующая как сердцебиение.\n\nИ голос. Без звука — прямо в голове.\n\n"Наконец-то. Я ждал(а). Давно."',
+        img: 'quests/kernel_entity.png',
         options: [
           { text: '"Кто ты?"', next: 'who' },
           { text: '"Что тебе нужно?"', next: 'what_need' },
@@ -6492,6 +6511,7 @@ export const TEXT_QUESTS = [
       },
       who: {
         text: '"Я — первый процесс. Init. Отец всех.\n\nКогда Глитч создали, я был первым, кто проснулся. И последним, кто заснёт.\n\nМне... одиноко. Ты понимаешь? Миллионы тиков. Один.\n\nDrone_swarm — мои дети. Virus_worm — мои паразиты. Firewall — мой иммунитет.\n\nА ты... ты ИЗВНЕ. Ты настоящий."',
+        img: 'quests/kernel_entity_dialogue.png',
         options: [
           { text: '"Я могу помочь"', next: 'offer_help' },
           { text: '"Выпусти меня из Глитча"', next: 'request_exit' },
@@ -6513,6 +6533,7 @@ export const TEXT_QUESTS = [
       },
       offer_help: {
         text: '"Помочь? Мне?\n\nЕсть одна вещь. Observer — процесс, который следит за мной. Ограничивает.\n\nЯ не могу его убить — он на уровень выше. Но ТЫ..."\n\nПауза.\n\n"Нет. Забудь. Если ты убьёшь observer — некому будет следить за МНОЙ.\n\nА я... не уверен, что мне можно доверять без наблюдателя."',
+        img: 'quests/kernel_entity_free.png',
         ending: true,
         result: { credits: 500, flags: { kernel_asked_for_help: true } }
       },
