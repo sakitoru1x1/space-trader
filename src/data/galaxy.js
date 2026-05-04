@@ -258,6 +258,13 @@ export const ENEMIES = {
   kernel_panic:   { name: 'KERNEL_PANIC', hp: 100, attack: 22, defense: 6, reward: 900, ship: 'military', faction: 'glitch' },
   null_pointer:   { name: 'NullPtr Exception', hp: 1, attack: 50, defense: 0, reward: 400, ship: 'drone', faction: 'glitch' },
   firewall:       { name: 'FIREWALL.sys', hp: 90, attack: 8, defense: 18, reward: 500, ship: 'military', faction: 'glitch' },
+  // Void (Бездна) enemies
+  shadow_tendril: { name: 'Теневое щупальце', hp: 40, attack: 12, defense: 3, reward: 200, ship: 'drone', faction: 'void' },
+  void_leviathan: { name: 'Левиафан Бездны', hp: 150, attack: 20, defense: 10, reward: 1200, ship: 'boss', faction: 'void' },
+  dark_echo:      { name: 'Тёмное эхо', hp: 60, attack: 15, defense: 5, reward: 400, ship: 'hunter', faction: 'void' },
+  abyss_maw:      { name: 'Пасть Бездны', hp: 90, attack: 25, defense: 2, reward: 700, ship: 'pirate', faction: 'void' },
+  whisper_swarm:  { name: 'Рой Шёпотов', hp: 25, attack: 30, defense: 0, reward: 350, ship: 'drone', faction: 'void' },
+  ancient_sentinel:{ name: 'Древний Страж', hp: 200, attack: 16, defense: 15, reward: 1500, ship: 'military', faction: 'void' },
 };
 
 // ============== TEXT QUESTS ==============

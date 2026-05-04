@@ -1,6 +1,7 @@
 import { Scene } from '../engine/SceneManager.js';
 import { GOODS, FACTIONS, GALAXIES, getGalaxySystems, getNeighbors, getGalaxyRoutes } from '../data/galaxy.js';
 import { GlitchEffects } from '../effects/GlitchEffects.js';
+import { VoidEffects } from '../effects/VoidEffects.js';
 
 const TYPE_COLORS = {
   industrial: '#ff8844', agricultural: '#44ff44', mining: '#cc8833',
@@ -288,6 +289,7 @@ export class GalaxyScene extends Scene {
     }
 
     const isGlitch = gs.galaxy === 'glitch';
+    const isVoid = gs.galaxy === 'void';
 
     if (isGlitch) {
       if (!this._glitchFx) this._glitchFx = new GlitchEffects();
@@ -300,6 +302,23 @@ export class GalaxyScene extends Scene {
         gs._glitchCounter = 0;
         gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
         this._glitchFx.playRandom(() => {
+          this._afterTravel(result);
+        });
+        return;
+      }
+    }
+
+    if (isVoid) {
+      if (!this._voidFx) this._voidFx = new VoidEffects();
+      if (gs._voidCounter == null) {
+        gs._voidCounter = 0;
+        gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
+      }
+      gs._voidCounter++;
+      if (gs._voidCounter >= gs._voidThreshold) {
+        gs._voidCounter = 0;
+        gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
+        this._voidFx.playRandom(() => {
           this._afterTravel(result);
         });
         return;

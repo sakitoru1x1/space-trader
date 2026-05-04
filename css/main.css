@@ -662,3 +662,147 @@ html, body {
   height: 100%; background: #ff0040; border-radius: 3px;
   transition: width 0.3s;
 }
+
+/* === VOID (Бездна) EFFECTS === */
+.void-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 9995; display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.void-overlay.blocking { pointer-events: all; }
+
+.void-whisper {
+  position: absolute; left: 50%; bottom: 40%;
+  transform: translateX(-50%);
+  font-family: 'Georgia', serif;
+  font-size: 16px; color: #6644aa;
+  text-align: center; padding: 0 20px;
+  animation: void-fade-in 2s ease-out forwards;
+  text-shadow: 0 0 20px #6644aa44;
+  font-style: italic;
+}
+
+.void-float-whisper {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Georgia', serif;
+  font-size: 14px; color: #6644aa88;
+  text-align: center; z-index: 9990;
+  pointer-events: none;
+  animation: void-fade-in 1.5s ease-out forwards;
+  font-style: italic;
+}
+
+@keyframes void-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes void-sink {
+  0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+  100% { transform: translateX(-50%) translateY(80px); opacity: 0.3; }
+}
+
+.void-eye {
+  width: 120px; height: 60px;
+  border: 2px solid #6644aa;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.8s ease;
+  opacity: 0.3;
+}
+.void-eye::after {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  width: 20px; height: 20px;
+  background: #aa00ff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.6s ease;
+  box-shadow: 0 0 30px #aa00ff, 0 0 60px #6600cc;
+}
+.void-eye.open { opacity: 1; border-color: #aa00ff; }
+.void-eye.open::after { transform: translate(-50%, -50%) scale(1); }
+.void-eye.close { opacity: 0; transform: scale(0.5); }
+
+.void-heartbeat {
+  animation: void-pulse 0.8s ease-in-out infinite;
+}
+@keyframes void-pulse {
+  0%, 100% { box-shadow: inset 0 0 50px rgba(80,0,0,0); }
+  50% { box-shadow: inset 0 0 50px rgba(80,0,0,0.5); }
+}
+
+.void-dark-layer {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse at center, transparent 20%, rgba(30,0,50,0.8) 100%);
+  animation: void-pulse-slow 2s ease-in-out infinite;
+}
+@keyframes void-pulse-slow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.void-mouth {
+  width: 150px; height: 4px;
+  background: #220033;
+  border-radius: 50%;
+  transition: all 1s ease;
+  box-shadow: 0 0 20px #440066;
+}
+.void-mouth.open {
+  height: 80px; width: 120px;
+  background: radial-gradient(ellipse, #000 40%, #220033 100%);
+  border: 2px solid #660099;
+  box-shadow: 0 0 40px #660099, inset 0 0 30px #000;
+}
+
+.void-dialog {
+  width: 80%; max-width: 300px;
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+}
+.void-dialog-line {
+  margin: 8px 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  animation: void-fade-in 0.8s ease-out forwards;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+.void-dialog-line.echo {
+  color: #8866cc;
+  background: rgba(60,30,90,0.3);
+  border-left: 2px solid #6644aa;
+}
+.void-dialog-line.sys {
+  color: #444;
+  font-family: monospace;
+  font-size: 11px;
+  text-align: center;
+}
+
+.void-vision-text {
+  font-family: 'Georgia', serif;
+  font-size: 15px; color: #8866cc;
+  text-align: center; padding: 20px 30px;
+  line-height: 1.6;
+  max-width: 320px;
+  animation: void-fade-in 1.5s ease-out forwards;
+  font-style: italic;
+}
+
+.void-clock {
+  font-family: monospace;
+  font-size: 36px; color: #6644aa;
+  text-shadow: 0 0 20px #6644aa;
+  transition: color 0.3s;
+}
+
+.void-breathing {
+  animation: void-breathe 2s ease-in-out infinite;
+}
+@keyframes void-breathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.008); filter: brightness(0.85); }
+}

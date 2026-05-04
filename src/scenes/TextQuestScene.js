@@ -60,13 +60,48 @@ export class TextQuestScene extends Scene {
 
     if (node.effect) this.applyEffect(node.effect, gs);
 
+    if (node.ending && node.result) {
+      const r = node.result;
+      if (r.credits) gs.credits += r.credits;
+      if (r.damage) gs.hp = Math.max(1, gs.hp - r.damage);
+      if (r.heal) gs.hp = Math.min(gs.ship.hp + (gs.bonuses.hp || 0), gs.hp + r.heal);
+      if (r.reputation && typeof r.reputation === 'number') {
+        if (!gs.factionRep.traders) gs.factionRep.traders = 0;
+        gs.factionRep.traders += r.reputation;
+      }
+      if (r.factionRep) {
+        for (const [fac, val] of Object.entries(r.factionRep)) {
+          if (!gs.factionRep[fac]) gs.factionRep[fac] = 0;
+          gs.factionRep[fac] += val;
+        }
+      }
+      if (r.flags) {
+        for (const [k, v] of Object.entries(r.flags)) gs.setQuestFlag(k, v);
+      }
+      if (!gs.textQuestsCompleted) gs.textQuestsCompleted = [];
+      if (!gs.textQuestsCompleted.includes(this.quest.id)) {
+        gs.textQuestsCompleted.push(this.quest.id);
+      }
+      gs.save();
+    }
+
     const options = this.el('div', 'event-options');
 
     if (node.options && node.options.length > 0) {
       for (const opt of node.options) {
+        let locked = false;
+        if (opt.requires) {
+          if (opt.requires.credits && gs.credits < opt.requires.credits) locked = true;
+          if (opt.requires.flag && !gs.getQuestFlag(opt.requires.flag)) locked = true;
+        }
         const btn = this.el('button', 'event-option');
         btn.textContent = opt.text || 'Далее';
-        this.listen(btn, 'click', () => this.choose(opt, gs));
+        if (locked) {
+          btn.style.opacity = '0.4';
+          btn.style.pointerEvents = 'none';
+        } else {
+          this.listen(btn, 'click', () => this.choose(opt, gs));
+        }
         options.appendChild(btn);
       }
     } else {

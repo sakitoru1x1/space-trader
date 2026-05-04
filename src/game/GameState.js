@@ -602,6 +602,12 @@ export class GameState {
         else if (level < 5) template = glitchEnemies[Math.floor(Math.random() * 2) + 1];
         else if (level < 8) template = glitchEnemies[2 + Math.floor(Math.random() * 2)];
         else template = glitchEnemies[3 + Math.floor(Math.random() * 3)];
+      } else if (this.galaxy === 'void') {
+        const voidEnemies = [ENEMIES.shadow_tendril, ENEMIES.dark_echo, ENEMIES.whisper_swarm, ENEMIES.abyss_maw, ENEMIES.void_leviathan, ENEMIES.ancient_sentinel];
+        if (level < 3) template = voidEnemies[0];
+        else if (level < 5) template = voidEnemies[Math.floor(Math.random() * 2) + 1];
+        else if (level < 8) template = voidEnemies[2 + Math.floor(Math.random() * 2)];
+        else template = voidEnemies[3 + Math.floor(Math.random() * 3)];
       } else {
         if (level < 3) template = ENEMIES.pirate_scout;
         else if (level < 6) template = ENEMIES.pirate_raider;
