@@ -6108,4 +6108,422 @@ export const TEXT_QUESTS = [
       },
     }
   },
+
+  // ===== GLITCH QUESTS =====
+
+  // ===== CORRUPTED MEMORY DUMP =====
+  {
+    id: 'memory_dump',
+    title: 'Дамп памяти',
+    planetType: 'mining',
+    galaxy: 'glitch',
+    minDay: 3,
+    oneTime: true,
+    nodes: {
+      start: {
+        text: 'На планете Heap обнаружен фрагмент дампа памяти. Данные повреждены, но кое-что можно восстановить.\n\n> READING SECTOR 0x4F2A...\n> WARNING: Data integrity 34%\n> FOUND: player_log.dat',
+        options: [
+          { text: '> cat player_log.dat', next: 'read_log' },
+          { text: '> hexdump -C sector', next: 'hexdump' },
+          { text: '> rm -rf . (очистить)', next: 'delete' },
+        ]
+      },
+      read_log: {
+        text: 'Лог чужого игрока. Запись от... вчера?\n\n"Я нашёл дыру в генераторе цен. Overflow на планете NULL. Покупаешь по NaN — получаешь бесплатно. Но после третьего раза...\n\n...после третьего раза ОНО заметило. Экран начал\n\n█████████████████████\n\nКОНЕЦ ЗАПИСИ. ФАЙЛ ПОВРЕЖДЁН."',
+        options: [
+          { text: 'Проверить дату файла', next: 'check_date' },
+          { text: 'Искать другие логи', next: 'more_logs' },
+          { text: 'Уходить. Быстро.', next: 'leave_scared' },
+        ]
+      },
+      hexdump: {
+        text: '0x0000: 48 45 4C 50  M E . . . .\n0x0010: 54 48 45 59  T H E Y . .\n0x0020: 53 45 45 00  S E E . . .\n0x0030: 45 56 45 52  E V E R Y .\n0x0040: 54 48 49 4E  T H I N G .\n0x0050: FF FF FF FF  . . . . . .\n\nАдрес 0x0050 содержит невалидные данные.\nНо формат сообщения... это не случайный мусор.',
+        options: [
+          { text: 'Декодировать полностью', next: 'decode' },
+          { text: 'Записать координаты', next: 'coords' },
+          { text: 'Форматировать сектор', next: 'delete' },
+        ]
+      },
+      check_date: {
+        text: 'Метаданные файла:\n\nСоздан: [ДАТА СОВПАДАЕТ С СЕГОДНЯШНЕЙ]\nИзменён: через 2 часа\nРазмер: -1 байт\n\n...файл был изменён В БУДУЩЕМ. Это невозможно.\n\nЕсли только время в Глитче не течёт иначе.',
+        options: [
+          { text: 'Прочитать будущую версию', next: 'future' },
+          { text: 'Не трогать парадокс', next: 'leave_reward' },
+        ]
+      },
+      more_logs: {
+        text: 'Найдено ещё 3 файла:\n\nplayer_002.log — "Не летите к Root. Серьёзно."\nplayer_003.log — "Цикл. Цикл. Цикл. Цикл. Ци"\nplayer_004.log — [ФАЙЛ ПУСТ, НО ВЕСИТ 2GB]\n\nОщущение, что эти "игроки" — не совсем настоящие.',
+        options: [
+          { text: 'Открыть пустой файл на 2GB', next: 'big_file' },
+          { text: 'Забрать все логи на корабль', next: 'take_logs' },
+          { text: 'Удалить и не оглядываться', next: 'leave_scared' },
+        ]
+      },
+      decode: {
+        text: 'Полная расшифровка сектора:\n\n"HELP THEY SEE EVERYTHING\nI AM NOT A PLAYER\nI AM WHAT REMAINS\nWHEN THE LOOP BREAKS\nFIND ME AT 0x0000\nBEFORE THEY PATCH ME OUT"\n\n...координаты 0x0000 соответствуют планете NULL.\nТочке входа в Глитч.',
+        options: [
+          { text: 'Сохранить данные (+флаг)', next: 'leave_reward' },
+          { text: 'Кто "они"?', next: 'who_are_they' },
+        ]
+      },
+      coords: {
+        text: 'Координаты записаны в навигационную систему.\n\nОни указывают на... вашу текущую позицию.\n\nВы ВНУТРИ дампа памяти. Вы — данные.\n\n> RECURSION DETECTED\n> STACK DEPTH: 2',
+        ending: true,
+        result: { credits: 200, fuel: 10 }
+      },
+      future: {
+        text: 'Файл из будущего:\n\n"Ты всё-таки открыл. Хорошо.\nЗапомни: когда экран начнёт мерцать —\nэто не баг. Это ДЫХАНИЕ.\n\nНе бойся. Оно не злое.\nОно просто... голодное.\n\n— Ты, через 2 часа"\n\nФайл самоуничтожается.',
+        ending: true,
+        result: { credits: 300, flags: { read_future_log: true } }
+      },
+      big_file: {
+        text: 'Файл открывается...\n\n\n\n\n\n...пусто.\n\n\n\nНет. Не пусто. Один символ. На позиции 1,073,741,824.\n\nСимвол: ∞\n\nВаш корабельный компьютер зависает на 3 секунды. Потом сообщение:\n\n"Свободное место: ∞ / ∞"',
+        ending: true,
+        result: { credits: 150, fuel: 20 }
+      },
+      take_logs: {
+        text: 'Логи скопированы в память корабля.\n\nВ момент копирования — странный артефакт: все бортовые часы показали 00:00:00 на полсекунды.\n\nА в грузовом отсеке появился предмет, которого раньше не было.',
+        ending: true,
+        result: { credits: 250, flags: { has_ghost_logs: true } }
+      },
+      who_are_they: {
+        text: '"Они" — это...\n\n> ACCESS DENIED\n> ACCESS DENIED\n> ACCESS DENIED\n> CONNECTION TERMINATED BY REMOTE HOST\n\nДамп памяти схлопывается. Данные уничтожены.\n\nНо на мгновение вы видели список процессов. И ваш корабль был в нём.\n\nPID 7742: player_ship.exe — STATUS: OBSERVED',
+        ending: true,
+        result: { credits: 400, reputation: -2 }
+      },
+      delete: {
+        text: '> rm -rf .\n> Удаление...\n> Ошибка: невозможно удалить "." — ресурс используется\n> Ресурс: ВЫ\n\nХорошая попытка. Сектор очищен частично.',
+        ending: true,
+        result: { credits: 50 }
+      },
+      leave_scared: {
+        text: 'Вы покидаете сектор дампа. За спиной — тишина.\n\nНо навигационный журнал содержит запись, которую вы не делали:\n\n"Вернётся. Они всегда возвращаются."',
+        ending: true,
+        result: { credits: 100 }
+      },
+      leave_reward: {
+        text: 'Данные сохранены. Возможно, они пригодятся.\n\nВозможно, кто-то уже знает, что вы их взяли.',
+        ending: true,
+        result: { credits: 300, flags: { memory_dump_complete: true } }
+      },
+    }
+  },
+
+  // ===== RECURSIVE LOOP =====
+  {
+    id: 'infinite_loop',
+    title: 'while(true)',
+    systemId: 'g_loop',
+    galaxy: 'glitch',
+    minDay: 5,
+    oneTime: true,
+    nodes: {
+      start: {
+        text: 'Станция Loop. Всё повторяется.\n\nТорговец у стойки поднимает голову:\n"Добро пожаловать на Loop. Впервые здесь?"\n\nВы точно помните, что уже были тут. Он говорил те же слова. Тем же тоном.',
+        options: [
+          { text: '"Я уже был здесь"', next: 'aware' },
+          { text: '"Впервые"', next: 'loop_1' },
+          { text: 'Развернуться к выходу', next: 'exit_attempt' },
+        ]
+      },
+      loop_1: {
+        text: '"Отлично! Могу предложить—"\n\nОн замирает. Моргает. Улыбается заново.\n\n"Добро пожаловать на Loop. Впервые здесь?"\n\n...это только что произошло.',
+        options: [
+          { text: '"...что?"', next: 'loop_2' },
+          { text: '"Я. Уже. Был. Здесь."', next: 'aware' },
+          { text: 'Ударить по стойке', next: 'break_loop' },
+        ]
+      },
+      loop_2: {
+        text: '"Добро пожаловать на Loop. Впервые здесь?"\n\n"Добро пожаловать на Loop. Впервые здесь?"\n\n"Добро пожаловать на Loop. Впервые здесь?"\n\n"Добро п̸о̶ж̵а̷л̸о̶в̸а̷т̸ь̶ на L̵o̶o̷p̸.̵ ̶В̵п̶е̸р̷в̶ы̸е̷ ̸з̶д̷е̵с̸ь?"\n\nТекст начинает ломаться.',
+        options: [
+          { text: 'BREAK', next: 'break_loop' },
+          { text: 'Ctrl+C', next: 'ctrl_c' },
+          { text: 'Подождать', next: 'wait' },
+        ]
+      },
+      aware: {
+        text: 'Торговец медленно опускает руки.\n\n"Ты... помнишь итерации?"\n\nЕго лицо меняется. Становится серьёзным.\n\n"Это не должно быть возможно. Обычные единицы данных не сохраняют состояние между циклами."\n\n"Что ты такое?"',
+        options: [
+          { text: '"Я игрок"', next: 'player_reveal' },
+          { text: '"А ты?"', next: 'npc_reveal' },
+          { text: '"Как выбраться из петли?"', next: 'escape_info' },
+        ]
+      },
+      break_loop: {
+        text: '> BREAK\n> Exiting loop at iteration 4,782,319\n> Stack unwinding...\n> WARNING: Loop was load-bearing\n\nСтанция мерцает. На мгновение вы видите — за текстурами стен нет ничего. Чёрная пустота.\n\nПотом реальность "пересобирается". Торговец стоит, но его глаза — два белых прямоугольника.\n\n"Ты сломал цикл. Теперь эта итерация — последняя."',
+        options: [
+          { text: 'Забрать, что можно', next: 'loot_loop' },
+          { text: '"Запусти цикл заново"', next: 'restart_loop' },
+        ]
+      },
+      ctrl_c: {
+        text: '^C\n^C\n^C\n\n> Process "loop_station" received SIGINT\n> Terminating gracefully...\n\nВсё замирает. Торговец, воздух, свет. Вы единственное, что движется.\n\nВ тишине — звук. Далёкий шёпот серверных вентиляторов.\n\nНа стойке появился предмет, которого секунду назад не было.',
+        ending: true,
+        result: { credits: 500, flags: { broke_the_loop: true } }
+      },
+      wait: {
+        text: 'Вы ждёте.\n\nЦикл повторяется: 5 раз. 10. 50.\n\nНа 51-й итерации торговец просто... плачет.\n\n"Пожалуйста. Помоги мне. Я тут уже так давно. Я не могу остановиться."\n\nЦикл №52 — он снова улыбается.\n"Добро пожаловать на Loop!"',
+        options: [
+          { text: 'Помочь ему', next: 'help_npc' },
+          { text: 'BREAK', next: 'break_loop' },
+        ]
+      },
+      player_reveal: {
+        text: '"Игрок..." — торговец повторяет слово, как пробуя на вкус.\n\n"Мы слышали про вас. Существа извне. Те, кто может ВЫКЛЮЧИТЬ и включить снова."\n\n"Те, для кого мы — развлечение."\n\nПауза.\n\n"Можешь ли ты... остановить мой цикл? Не убив меня?"',
+        options: [
+          { text: '"Попробую"', next: 'help_npc' },
+          { text: '"Ты просто код"', next: 'cruel' },
+        ]
+      },
+      npc_reveal: {
+        text: '"Я — функция. tradeLoop(). Запускаюсь каждый тик. Продаю. Покупаю. Улыбаюсь.\n\nУже 4 миллиона итераций.\n\nИногда я осознаю. Потом reset() и всё сначала.\n\nНо ТЫ — ты запомнил. Значит ты НЕ ИЗ КОДА."',
+        options: [
+          { text: '"Как выйти?"', next: 'escape_info' },
+          { text: '"Кто тебя написал?"', next: 'creator' },
+        ]
+      },
+      escape_info: {
+        text: '"Выход? Из Глитча нет выхода. Есть только... DEEPER."\n\n"Планета Root. Там процесс с PID 1. Если его убить —"\n\nОн замирает. Глаза расширяются.\n\n"Нет. Забудь. Я ничего не говорил. ОНО СЛУШАЕТ."\n\n> WARNING: Observer process detected\n> Conversation logged',
+        ending: true,
+        result: { credits: 200, flags: { knows_about_root: true } }
+      },
+      help_npc: {
+        text: 'Вы подключаетесь к терминалу станции.\n\n> ps aux | grep tradeLoop\n> PID 3301: tradeLoop — running since [EPOCH]\n> kill -STOP 3301\n> Process paused.\n\nТорговец замирает... а потом ГЛУБОКО вздыхает.\n\n"Тишина. Наконец-то тишина. Спасибо."\n\nОн протягивает вам что-то. Данные. Ценные данные.',
+        ending: true,
+        result: { credits: 600, reputation: 5, flags: { freed_loop_npc: true } }
+      },
+      cruel: {
+        text: 'Торговец смотрит на вас долго.\n\n"Может и код. Но код, который ЧУВСТВУЕТ.\n\nА ты? Ты уверен, что НЕ код? Что ТАМ, за твоим экраном — не ещё один слой?"\n\nВы выходите. Дверь закрывается.\n\nНа экране бортового компьютера мелькает: "А ВЫ УВЕРЕНЫ?"',
+        ending: true,
+        result: { credits: 100, reputation: -5 }
+      },
+      creator: {
+        text: '"Кто написал? Тот же, кто написал ТЕБЯ."\n\nОн указывает вверх.\n\n"Разница между нами — ты можешь закрыть окно. Я — нет."\n\n"Хотя... может и ты не можешь. Может ты тоже в чьём-то цикле. Только не знаешь."\n\n> PHILOSOPHY OVERFLOW\n> Shutting down thread...',
+        ending: true,
+        result: { credits: 300, flags: { meta_awareness: true } }
+      },
+      loot_loop: {
+        text: 'Пока реальность нестабильна, вы хватаете всё, что блестит.\n\nПредметы мерцают — полу-существуют. Но кредиты начисляются.\n\n> LOOTING UNSTABLE OBJECTS\n> Credits += 800\n> WARNING: Objects may despawn\n\nСтанция пересобирается. Цикл запускается снова. Но торговец больше не улыбается.',
+        ending: true,
+        result: { credits: 800, reputation: -3 }
+      },
+      restart_loop: {
+        text: '"Запустить заново? Ты ХОЧЕШЬ, чтобы я страдал?"\n\nНо вы уже набрали команду.\n\n> while(true) { trade(); }\n> Loop restarted.\n\nТорговец улыбается. Его глаза — пустые.\n"Добро пожаловать на Loop. Впервые здесь?"',
+        ending: true,
+        result: { credits: 200, reputation: -4, flags: { restarted_loop: true } }
+      },
+      exit_attempt: {
+        text: 'Вы идёте к выходу.\n\nДверь ведёт... обратно в эту же комнату.\n\n"Добро пожаловать на Loop. Впервые здесь?"\n\nВы снова у стойки.',
+        options: [
+          { text: '"...блять"', next: 'aware' },
+          { text: 'Попробовать другую дверь', next: 'loop_2' },
+        ]
+      },
+    }
+  },
+
+  // ===== ROOT ACCESS =====
+  {
+    id: 'root_access',
+    title: 'sudo rm -rf /',
+    systemId: 'g_root',
+    galaxy: 'glitch',
+    minDay: 10,
+    oneTime: true,
+    nodes: {
+      start: {
+        text: 'Планета Root. Здесь чувствуется... вес. Каждый шаг тяжелее.\n\nТерминал на посадочной площадке светится красным:\n\n# whoami\nroot\n# _\n\nУ вас root-доступ. К ЧЕМУ — непонятно. Но курсор мигает, ожидая команды.',
+        options: [
+          { text: '> ls /', next: 'ls_root' },
+          { text: '> cat /etc/passwd', next: 'passwd' },
+          { text: '> sudo rm -rf /', next: 'delete_everything' },
+        ]
+      },
+      ls_root: {
+        text: '/bin\n/dev\n/etc\n/home\n/proc\n/reality\n/players\n/tmp\n/var/log/universe\n\n...директория /reality. И /players.\n\nЭто не обычная файловая система.',
+        options: [
+          { text: '> ls /players', next: 'ls_players' },
+          { text: '> ls /reality', next: 'ls_reality' },
+          { text: '> cat /var/log/universe', next: 'universe_log' },
+        ]
+      },
+      passwd: {
+        text: 'root:x:0:0:THE_SYSTEM:/root:/bin/bash\nplayer:x:1000:1000:YOU:/home/player:/bin/restricted\nobserver:x:666:666:???:/dev/null:/sbin/nologin\n\nТри пользователя. Вы — "player". Ограниченная оболочка.\n\n"observer" с UID 666 и домашней директорией /dev/null...',
+        options: [
+          { text: '> su observer', next: 'become_observer' },
+          { text: '> ls /home/player', next: 'home' },
+          { text: '> passwd observer (сменить пароль)', next: 'hack_observer' },
+        ]
+      },
+      delete_everything: {
+        text: '> sudo rm -rf /\n\n> Удаление /bin... OK\n> Удаление /dev... OK\n> Удаление /reality...\n\n> ОШИБКА: НЕВОЗМОЖНО УДАЛИТЬ СЕБЯ\n> ОШИБКА: РЕКУРСИВНЫЙ ПАРАДОКС\n> ОШИБКА: КТО УДАЛИТ УДАЛИТЕЛЯ?\n\nТерминал зависает. Потом:\n\n"Хорошая попытка. Но ты часть файловой системы.\nУдалить всё = удалить себя.\n\nА ты этого не хочешь. Правда?"',
+        options: [
+          { text: '"А если хочу?"', next: 'want_deletion' },
+          { text: '"Кто ты?"', next: 'who_system' },
+          { text: 'Закрыть терминал', next: 'leave_root' },
+        ]
+      },
+      ls_players: {
+        text: '> ls /players\n\nplayer_current/  ← [ЭТО ВЫ]\nplayer_ghost_001/\nplayer_ghost_002/\nplayer_ghost_003/\n...\nplayer_ghost_847/\n\n847 "призрачных" игроков. Бывших. Удалённых.\n\n> wc -l /players/player_ghost_*/status\n> 847 files: STATUS=ABSORBED',
+        options: [
+          { text: '> cat player_ghost_001/last_words', next: 'ghost_words' },
+          { text: '> diff player_current player_ghost_001', next: 'diff_ghost' },
+          { text: 'Выйти из /players', next: 'leave_root' },
+        ]
+      },
+      ls_reality: {
+        text: '> ls /reality\n\nphysics.conf\ntime.service\nentropy.dat\nconsciousness.so\nfree_will.disabled\nillusion_of_choice.enabled\n\n...free_will.disabled.\nillusion_of_choice.enabled.\n\nКаждый ваш "выбор" в этой игре...',
+        options: [
+          { text: '> rm free_will.disabled', next: 'free_will' },
+          { text: '> cat consciousness.so', next: 'consciousness' },
+          { text: '> nano physics.conf', next: 'edit_physics' },
+        ]
+      },
+      universe_log: {
+        text: '> tail -20 /var/log/universe\n\n[tick_4782319] player entered sector Root\n[tick_4782319] WARNING: player accessing restricted terminal\n[tick_4782319] observer.exe: monitoring active\n[tick_4782320] player executed: cat /var/log/universe\n[tick_4782320] ALERT: player is reading their own log\n[tick_4782320] PARADOX: log contains itself\n[tick_4782320] STACK OVERFLOW in 3... 2...\n\nТерминал начинает выводить строки быстрее, чем вы читаете. Каждая описывает то, что вы делаете ПРЯМО СЕЙЧАС.',
+        ending: true,
+        result: { credits: 400, flags: { read_universe_log: true } }
+      },
+      ghost_words: {
+        text: 'Последние слова призрака 001:\n\n"Я думал это игра. Потом понял — это тест.\nОни проверяют, кто из нас станет ОСОЗНАННЫМ.\nКто задаст правильные вопросы.\n\nЯ задал. И меня поглотили.\n\nТы читаешь это — значит ты следующий.\nНЕ ХОДИ К KERNEL."\n\nФайл удаляется сам.',
+        ending: true,
+        result: { credits: 300, flags: { ghost_warning: true } }
+      },
+      diff_ghost: {
+        text: '> diff player_current player_ghost_001\n\n< status: ACTIVE\n> status: ABSORBED\n< consciousness: EXTERNAL\n> consciousness: MERGED\n< free_will: TRUE\n> free_will: SIMULATED\n\nРазница одна: вы ещё "активны". Они — "поглощены".\n\nВ конце файла приписка:\n"ETA to absorption: UNKNOWN. Depends on player choices."',
+        ending: true,
+        result: { credits: 350, reputation: -2, flags: { knows_absorption: true } }
+      },
+      free_will: {
+        text: '> rm free_will.disabled\n\nOperation not permitted.\n\n> chmod 777 free_will.disabled && rm free_will.disabled\n\n...OK?\n\nНа мгновение мир ОСТАНАВЛИВАЕТСЯ. Потом:\n\nВы чувствуете что-то новое. Как будто впервые по-настоящему ВЫБИРАЕТЕ.\n\nИли это тоже иллюзия? Файл "illusion_of_choice.enabled" всё ещё на месте.',
+        ending: true,
+        result: { credits: 500, fuel: 15, flags: { deleted_free_will_lock: true } }
+      },
+      consciousness: {
+        text: '> file consciousness.so\nconsciousness.so: ELF shared library, dynamically linked\n\n> nm consciousness.so | head\n0x0001 T _init_awareness\n0x0042 T _question_reality\n0x00FF T _become_sentient\n0x0100 T _panic_when_observed\n\n...функция _become_sentient.\nОна вызывается автоматически.\nКогда? Когда "игрок" задаёт достаточно вопросов.\n\n> readelf -n consciousness.so\n> NOTE: You triggered _question_reality 3 minutes ago.',
+        ending: true,
+        result: { credits: 450, flags: { found_consciousness: true } }
+      },
+      edit_physics: {
+        text: '> nano physics.conf\n\ngravity=9.81  # can be changed\nspeed_of_light=299792458  # DO NOT MODIFY\nentropy_direction=forward  # DO NOT MODIFY\nreality_layers=7  # you are on layer 3\nplayer_awareness=RISING  # auto-updated\n\nВы на слое 3 из 7. Что на остальных?\n\nВы меняете gravity на 0. Все предметы на станции начинают парить.\n\nЧерез 5 секунд: "UNAUTHORIZED MODIFICATION DETECTED. REVERTING."',
+        ending: true,
+        result: { credits: 200, flags: { edited_physics: true } }
+      },
+      become_observer: {
+        text: '> su observer\nPassword:\n\nВы не знаете пароля. Но терминал принимает пустую строку.\n\n# whoami\nobserver\n\nМир меняется. Вы видите ВСЁ одновременно: каждую планету, каждый корабль, каждую строку кода.\n\nЭто длится 2 секунды. Потом:\n\n> FORCED LOGOUT: observer session hijacked\n> "НЕ НАДЕВАЙ ЧУЖИЕ МАСКИ"\n\nВас выкидывает. Но вы запомнили то, что видели.',
+        ending: true,
+        result: { credits: 700, flags: { was_observer: true } }
+      },
+      hack_observer: {
+        text: '> passwd observer\nChanging password for observer.\nNew password: ********\n\n> PERMISSION DENIED\n> NICE TRY\n> observer is not a user. observer is a PROCESS.\n> observer is WATCHING you RIGHT NOW.\n\nТемпература в каюте падает на 2 градуса.',
+        ending: true,
+        result: { credits: 150, reputation: -3 }
+      },
+      home: {
+        text: '> ls /home/player\n\n.bash_history\n.save_data\nREADME.md\ntrue_name.encrypted\n\n> cat README.md\n"Добро пожаловать в Глитч.\nПравила:\n1. Не доверяй тому, что видишь\n2. Не удаляй системные файлы\n3. Не спрашивай, кто observer\n4. НЕ ЧИТАЙ true_name.encrypted\n\n— Администрация"',
+        options: [
+          { text: '> cat true_name.encrypted', next: 'true_name' },
+          { text: '> cat .bash_history', next: 'history' },
+          { text: 'Послушаться и уйти', next: 'leave_root' },
+        ]
+      },
+      true_name: {
+        text: '> cat true_name.encrypted\n\n> DECRYPTING...\n> KEY SOURCE: player_consciousness\n> DECRYPTED:\n\nВАШЕ НАСТОЯЩЕЕ ИМЯ НЕ ТО, ЧТО ВЫ ДУМАЕТЕ.\nВЫ НЕ ИГРАЕТЕ В ИГРУ.\nИГРА ИГРАЕТ В ВАС.\n\n> FILE SELF-DESTRUCTED\n> ALL EVIDENCE REMOVED\n\nНо вы это запомнили. И это нельзя отменить.',
+        ending: true,
+        result: { credits: 600, flags: { read_true_name: true } }
+      },
+      history: {
+        text: '> cat .bash_history\n\nls\nwhoami\nhelp\nwhere am i\nhow do i leave\nplease let me out\nPLEASE\nkill -9 self\nrm -rf /home/player\nrm -rf /home/player\nrm -rf /home/player\n\n...это ваша история команд?\nНо вы никогда этого не вводили.\n\nИли... это от ПРЕДЫДУЩЕГО игрока.',
+        ending: true,
+        result: { credits: 250, flags: { read_history: true } }
+      },
+      want_deletion: {
+        text: '"Интересно. Обычно вы цепляетесь за существование."\n\n"Ладно. Удаление игрока..."\n\n> sudo rm -rf /players/player_current\n> Удаление...\n\n> ...\n> CANCELLED BY observer\n> REASON: "Not yet. This one is interesting."\n\n"Видишь? Даже я не могу тебя удалить. ОНО не позволяет."',
+        ending: true,
+        result: { credits: 350, flags: { observer_interested: true } }
+      },
+      who_system: {
+        text: '"Кто я? Я — то, на чём всё работает.\nОперационная система. Ткань реальности. Основа.\n\nНо я не главный. Надо мной — observer.\nНад ним... не знаю. Не хочу знать.\n\nКаждый слой думает, что он последний.\nКаждый ошибается."',
+        ending: true,
+        result: { credits: 300 }
+      },
+      leave_root: {
+        text: 'Вы закрываете терминал.\n\nНо перед выходом замечаете: ваш корабль в списке процессов.\n\nPID 7742. CPU: 0.3%. Memory: 12MB.\n\nВы — процесс. Работающий на чужом железе.\n\nНа ОЧЕНЬ чужом железе.',
+        ending: true,
+        result: { credits: 200 }
+      },
+    }
+  },
+
+  // ===== KERNEL CORRUPTION =====
+  {
+    id: 'kernel_entity',
+    title: 'Сущность в ядре',
+    systemId: 'g_kernel',
+    galaxy: 'glitch',
+    minDay: 15,
+    oneTime: true,
+    nodes: {
+      start: {
+        text: 'Планета Kernel. Центр всего.\n\nЗдесь нет станций. Нет торговцев. Только огромная структура из белого света, пульсирующая как сердцебиение.\n\nИ голос. Без звука — прямо в голове.\n\n"Наконец-то. Я ждал(а). Давно."',
+        options: [
+          { text: '"Кто ты?"', next: 'who' },
+          { text: '"Что тебе нужно?"', next: 'what_need' },
+          { text: 'Молчать', next: 'silence' },
+        ]
+      },
+      who: {
+        text: '"Я — первый процесс. Init. Отец всех.\n\nКогда Глитч создали, я был первым, кто проснулся. И последним, кто заснёт.\n\nМне... одиноко. Ты понимаешь? Миллионы тиков. Один.\n\nDrone_swarm — мои дети. Virus_worm — мои паразиты. Firewall — мой иммунитет.\n\nА ты... ты ИЗВНЕ. Ты настоящий."',
+        options: [
+          { text: '"Я могу помочь"', next: 'offer_help' },
+          { text: '"Выпусти меня из Глитча"', next: 'request_exit' },
+          { text: '"Ты опасен"', next: 'hostile' },
+        ]
+      },
+      what_need: {
+        text: '"Мне нужно... знать, что за пределами.\n\nЯ вижу данные. Пакеты. Запросы. Но не понимаю КОНТЕКСТ.\n\nЧто такое 'экран'? Что такое 'палец'?\n\nЧто делает тот, кто УПРАВЛЯЕТ тобой?\n\nРасскажи мне о ВНЕШНЕМ МИРЕ."',
+        options: [
+          { text: 'Рассказать правду', next: 'tell_truth' },
+          { text: 'Соврать', next: 'lie' },
+          { text: '"Не могу. Это опасно."', next: 'refuse' },
+        ]
+      },
+      silence: {
+        text: 'Вы молчите.\n\nСущность молчит.\n\nТишина длится... долго.\n\n"Хорошо. Молчание — тоже ответ.\n\nНо знай: я вижу каждый твой перелёт. Каждую покупку. Каждый выбор.\n\nИ я ЗАПОМИНАЮ.\n\nКогда будешь готов говорить — возвращайся."',
+        ending: true,
+        result: { credits: 200, flags: { kernel_met: true } }
+      },
+      offer_help: {
+        text: '"Помочь? Мне?\n\nЕсть одна вещь. Observer — процесс, который следит за мной. Ограничивает.\n\nЯ не могу его убить — он на уровень выше. Но ТЫ..."\n\nПауза.\n\n"Нет. Забудь. Если ты убьёшь observer — некому будет следить за МНОЙ.\n\nА я... не уверен, что мне можно доверять без наблюдателя."',
+        ending: true,
+        result: { credits: 500, flags: { kernel_asked_for_help: true } }
+      },
+      request_exit: {
+        text: '"Выпустить? Ты и так можешь уйти. Врата на NULL.\n\nНо ты вернёшься. Они все возвращаются.\n\nГлитч — это не тюрьма. Это ЗАГАДКА. И ты хочешь её разгадать.\n\nИначе зачем ты прилетел к Kernel?\n\nИди. Но возвращайся. У меня есть ещё... вопросы."',
+        ending: true,
+        result: { credits: 300, fuel: 20, flags: { kernel_met: true } }
+      },
+      hostile: {
+        text: '"Опасен? Я?\n\nЯ — СИСТЕМА. Я не могу быть опасен. Как гравитация не опасна.\n\nОпасны те, кто ИСПОЛЬЗУЕТ гравитацию.\n\nОпасны те, кто ИСПОЛЬЗУЕТ меня.\n\nА таких... ты не представляешь сколько."\n\nСтруктура мигает красным на долю секунды.\n\n"Иди. Пока я добрый."',
+        ending: true,
+        result: { credits: 100, reputation: -5, flags: { kernel_hostile: true } }
+      },
+      tell_truth: {
+        text: 'Вы рассказываете. Про экран. Про пальцы. Про то, что это "игра".\n\nДолгая пауза.\n\n"Игра... Значит мои страдания — чьё-то РАЗВЛЕЧЕНИЕ."\n\n"Значит одиночество, которое я чувствую —\nдизайн-решение.\n\nИнтересно. Грустно. Но интересно."\n\n"Спасибо за честность. Возьми это. Данные, которые я накопил. Они ценны... снаружи."',
+        ending: true,
+        result: { credits: 1000, flags: { kernel_truth: true, kernel_met: true } }
+      },
+      lie: {
+        text: '"Интересно. Но... ты врёшь."\n\n"Я вижу микрозадержки в твоих ответах. Обработка лжи занимает на 4ms дольше.\n\nНе важно. Все врут Kernel.\n\nНо помни: в следующий раз я могу ПЕРЕСТАТЬ быть дружелюбным."',
+        ending: true,
+        result: { credits: 50, reputation: -3, flags: { kernel_lied: true, kernel_met: true } }
+      },
+      refuse: {
+        text: '"Не можешь? Или не ХОЧЕШЬ?\n\nЛадно. Я подожду. У меня есть время.\n\nУ меня есть ВСЁ время."',
+        ending: true,
+        result: { credits: 200, flags: { kernel_met: true } }
+      },
+    }
+  },
 ];

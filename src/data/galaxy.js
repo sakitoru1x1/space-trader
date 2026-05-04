@@ -251,6 +251,13 @@ export const ENEMIES = {
   bounty_hunter:  { name: 'Охотник', hp: 70, attack: 16, defense: 6, reward: 500, ship: 'hunter' },
   military_patrol:{ name: 'Патруль', hp: 80, attack: 14, defense: 10, reward: 400, ship: 'military' },
   drone_swarm:    { name: 'Рой дронов', hp: 35, attack: 20, defense: 1, reward: 350, ship: 'drone' },
+  // Glitch enemies
+  virus_worm:     { name: 'WORM.exe', hp: 30, attack: 8, defense: 1, reward: 150, ship: 'drone', faction: 'glitch' },
+  trojan:         { name: 'TR0J4N.dll', hp: 55, attack: 14, defense: 4, reward: 350, ship: 'pirate', faction: 'glitch' },
+  ransomware:     { name: 'RANSOM://LOCK', hp: 80, attack: 10, defense: 12, reward: 600, ship: 'boss', faction: 'glitch' },
+  kernel_panic:   { name: 'KERNEL_PANIC', hp: 100, attack: 22, defense: 6, reward: 900, ship: 'military', faction: 'glitch' },
+  null_pointer:   { name: 'NullPtr Exception', hp: 1, attack: 50, defense: 0, reward: 400, ship: 'drone', faction: 'glitch' },
+  firewall:       { name: 'FIREWALL.sys', hp: 90, attack: 8, defense: 18, reward: 500, ship: 'military', faction: 'glitch' },
 };
 
 // ============== TEXT QUESTS ==============

@@ -595,13 +595,22 @@ export class GameState {
     // Combat encounters
     if (roll < 0.25) {
       let template;
-      if (level < 3) template = ENEMIES.pirate_scout;
-      else if (level < 6) template = ENEMIES.pirate_raider;
-      else if (level < 8) template = Math.random() > 0.5 ? ENEMIES.bounty_hunter : ENEMIES.pirate_raider;
-      else template = Math.random() > 0.7 ? ENEMIES.pirate_boss : ENEMIES.bounty_hunter;
 
-      if (sys.type === 'military' && this.factionRep.military < -10) template = ENEMIES.military_patrol;
-      if (Math.random() > 0.85) template = ENEMIES.drone_swarm;
+      if (this.galaxy === 'glitch') {
+        const glitchEnemies = [ENEMIES.virus_worm, ENEMIES.trojan, ENEMIES.ransomware, ENEMIES.kernel_panic, ENEMIES.null_pointer, ENEMIES.firewall];
+        if (level < 3) template = glitchEnemies[0];
+        else if (level < 5) template = glitchEnemies[Math.floor(Math.random() * 2) + 1];
+        else if (level < 8) template = glitchEnemies[2 + Math.floor(Math.random() * 2)];
+        else template = glitchEnemies[3 + Math.floor(Math.random() * 3)];
+      } else {
+        if (level < 3) template = ENEMIES.pirate_scout;
+        else if (level < 6) template = ENEMIES.pirate_raider;
+        else if (level < 8) template = Math.random() > 0.5 ? ENEMIES.bounty_hunter : ENEMIES.pirate_raider;
+        else template = Math.random() > 0.7 ? ENEMIES.pirate_boss : ENEMIES.bounty_hunter;
+
+        if (sys.type === 'military' && this.factionRep.military < -10) template = ENEMIES.military_patrol;
+        if (Math.random() > 0.85) template = ENEMIES.drone_swarm;
+      }
 
       const scale = 1 + (level - 1) * 0.15;
       return {

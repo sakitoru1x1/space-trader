@@ -98,6 +98,19 @@ export class StationScene extends Scene {
     });
   }
 
+  _glitchPrice(price) {
+    const gs = this.gameState;
+    if (gs.galaxy !== 'glitch') return { display: `${price}`, actual: price };
+    const r = Math.random();
+    if (r < 0.08) return { display: 'NaN', actual: Math.round(price * 0.1), glitch: true };
+    if (r < 0.12) return { display: '???', actual: price, glitch: true };
+    if (r < 0.16) return { display: '-1', actual: 1, glitch: true };
+    if (r < 0.20) return { display: `${price}`.split('').reverse().join(''), actual: price, glitch: true };
+    if (r < 0.23) return { display: '0x' + price.toString(16).toUpperCase(), actual: price, glitch: true };
+    if (r < 0.26) return { display: `${Math.round(price * 0.01)}`, actual: Math.round(price * 0.01), glitch: true };
+    return { display: `${price}`, actual: price };
+  }
+
   renderTrade(content, gs, sys, legal) {
     const prices = gs.getCurrentPrices();
     if (!legal) {
@@ -137,9 +150,14 @@ export class StationScene extends Scene {
 
       const btns = row.querySelector('.trade-btns');
 
-      const buyBtn = this.el('button', `trade-btn buy`, `${p.buy}`);
+      const gBuy = this._glitchPrice(p.buy);
+      const buyBtn = this.el('button', `trade-btn buy`, gBuy.display);
+      if (gBuy.glitch) buyBtn.style.color = '#00ff41';
       this.listen(buyBtn, 'click', () => {
+        const origBuy = p.buy;
+        if (gBuy.glitch) p.buy = gBuy.actual;
         const r = gs.buyGood(good.id, 1);
+        if (gBuy.glitch) p.buy = origBuy;
         if (r.success) {
           if (this.sfx) this.sfx.buy();
           this.toast(`-${r.totalCost}кр`, 'negative');
@@ -152,9 +170,14 @@ export class StationScene extends Scene {
       btns.appendChild(buyBtn);
 
       if (qty > 0) {
-        const sellBtn = this.el('button', 'trade-btn sell', `${p.sell}`);
+        const gSell = this._glitchPrice(p.sell);
+        const sellBtn = this.el('button', 'trade-btn sell', gSell.display);
+        if (gSell.glitch) sellBtn.style.color = '#00ff41';
         this.listen(sellBtn, 'click', () => {
+          const origSell = p.sell;
+          if (gSell.glitch) p.sell = gSell.actual;
           const r = gs.sellGood(good.id, 1);
+          if (gSell.glitch) p.sell = origSell;
           if (r.success) {
             if (this.sfx) this.sfx.sell();
             this.toast(`+${r.totalEarned}кр`, 'positive');
