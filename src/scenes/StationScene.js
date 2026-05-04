@@ -503,7 +503,7 @@ export class StationScene extends Scene {
   toast(text, type = '') {
     const t = this.el('div', `toast ${type}`);
     t.textContent = text;
-    document.body.appendChild(t);
+    this.appendToBody(t);
     this.delayed(2200, () => t.remove());
   }
 }

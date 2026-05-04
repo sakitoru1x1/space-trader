@@ -157,11 +157,12 @@ export class GameState {
     const targetSys = getGalaxySystems(this.galaxy).find(s => s.id === targetId);
     const dockFee = dockFees[targetSys?.type] || 60;
     const traderDiscount = this.factionRep.traders >= 20 ? 0.7 : 1;
-    const finalDockFee = Math.round(dockFee * traderDiscount);
+    const earlyGameDiscount = this.day <= 10 ? 0.5 : 1;
+    const finalDockFee = Math.round(dockFee * traderDiscount * earlyGameDiscount);
     this.credits = Math.max(0, this.credits - finalDockFee);
 
     const shipPrice = SHIPS[this.shipType]?.price || 0;
-    const maintenanceCost = Math.max(5, Math.round(shipPrice * 0.005));
+    const maintenanceCost = Math.max(2, Math.round(shipPrice * 0.003 * earlyGameDiscount));
     this.credits = Math.max(0, this.credits - maintenanceCost);
 
     // Pay mercenary
@@ -306,7 +307,7 @@ export class GameState {
     const sys = this.getSystem();
 
     // Contraband arrest risk in military systems
-    if (!good.legal && sys.type === 'military' && this.factionRep.pirates < 30) {
+    if (!good.legal && sys.type === 'military' && this.factionRep.pirates >= 30) {
       if (Math.random() < 0.3) {
         const fine = Math.floor(this.credits * 0.3);
         this.credits = Math.max(0, this.credits - fine);

@@ -193,7 +193,7 @@ export class CombatScene extends Scene {
   flash(color) {
     const f = this.el('div', 'screen-flash');
     f.style.background = color;
-    document.body.appendChild(f);
+    this.appendToBody(f);
     this.delayed(300, () => f.remove());
   }
 
@@ -360,7 +360,7 @@ export class CombatScene extends Scene {
     let dmg = Math.max(1, (this.enemy.attack || 5) + Math.floor(Math.random() * 4) - gs.getEffective('defense'));
 
     // Jamming
-    if (gs.bonuses.jamming && Math.random() < gs.bonuses.jamming * 0.15) {
+    if (gs.bonuses.jamming && Math.random() < gs.bonuses.jamming) {
       this.log('Глушилка: враг промахнулся!');
       this.finishEnemyTurn();
       return;
@@ -374,22 +374,24 @@ export class CombatScene extends Scene {
       this.log(`Враг атакует: -${dmg} HP`);
     }
 
+    // Mercenary intercept - absorbs part of the damage before it hits the player
+    if (gs.mercenary && gs.mercenary.currentHp > 0 && Math.random() < 0.4) {
+      const mercDmg = Math.max(1, Math.floor(dmg * 0.3));
+      dmg = Math.max(1, dmg - mercDmg);
+      gs.mercenary.currentHp -= mercDmg;
+      this.log(`${gs.mercenary.name} перехватил ${mercDmg} урона!`);
+      if (gs.mercenary.currentHp <= 0) {
+        this.log(`${gs.mercenary.name} погиб!`);
+        gs.mercenary = null;
+      }
+    }
+
     gs.hp = Math.max(0, gs.hp - dmg);
 
     // Module damage
     if (!this.defending && dmg > 10 && Math.random() < 0.2) {
       const modName = gs.damageRandomModule();
       if (modName) this.log(`${modName} повреждён!`);
-    }
-
-    // Mercenary intercept
-    if (gs.mercenary && gs.mercenary.currentHp > 0 && Math.random() < 0.4) {
-      const mercDmg = Math.max(1, Math.floor(dmg * 0.3));
-      gs.mercenary.currentHp -= mercDmg;
-      if (gs.mercenary.currentHp <= 0) {
-        this.log(`${gs.mercenary.name} погиб!`);
-        gs.mercenary = null;
-      }
     }
 
     this.updateHp();
@@ -467,13 +469,12 @@ export class CombatScene extends Scene {
       const newBtn = this.btn('Новая игра', () => {
         overlay.remove();
         gs.reset();
-        gs.newGame();
         this.startScene('Galaxy');
       }, 'btn btn-wide btn-red');
       result.appendChild(newBtn);
     }
 
     overlay.appendChild(result);
-    document.body.appendChild(overlay);
+    this.appendToBody(overlay);
   }
 }

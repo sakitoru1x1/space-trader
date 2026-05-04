@@ -262,10 +262,7 @@ export class GalaxyScene extends Scene {
   }
 
   goStation() {
-    const gs = this.gameState;
-    if (gs.galaxy === 'glitch') this.startScene('Station', { tab: 'trade' });
-    else if (gs.galaxy === 'void') this.startScene('Station', { tab: 'trade' });
-    else this.startScene('Station', { tab: 'trade' });
+    this.startScene('Station', { tab: 'trade' });
   }
 
   travelTo(targetSys) {
@@ -337,15 +334,15 @@ export class GalaxyScene extends Scene {
       }
     } else {
       const r = Math.random();
-      if (r < 0.06) this.startScene('Asteroid');
-      else if (r < 0.10) this.startScene('Fishing');
-      else if (r < 0.14) this.startScene('Scanner');
-      else if (r < 0.17) this.startScene('SmuggleRun');
-      else if (r < 0.20) this.startScene('Bribery');
-      else if (r < 0.23) this.startScene('CargoGrab');
-      else if (r < 0.25) this.startScene('Decipher');
-      else if (r < 0.27) this.startScene('Artifact');
-      else if (r < 0.29) this.startScene('Defuse');
+      if (r < 0.03) this.startScene('Asteroid');
+      else if (r < 0.05) this.startScene('Fishing');
+      else if (r < 0.07) this.startScene('Scanner');
+      else if (r < 0.085) this.startScene('SmuggleRun');
+      else if (r < 0.10) this.startScene('Bribery');
+      else if (r < 0.115) this.startScene('CargoGrab');
+      else if (r < 0.125) this.startScene('Decipher');
+      else if (r < 0.135) this.startScene('Artifact');
+      else if (r < 0.15) this.startScene('Defuse');
       else this.startScene('Galaxy');
     }
   }
@@ -354,7 +351,6 @@ export class GalaxyScene extends Scene {
     const gs = this.gameState;
     const gate = GALAXIES[gs.galaxy].gates.find(g => g.target === targetGalaxy);
     if (!gate) return;
-    gs.fuel -= 15;
     gs.switchGalaxy(targetGalaxy);
     if (this.sfx) this.sfx.warp();
     this.delayed(500, () => this.startScene('Galaxy'));
@@ -363,7 +359,7 @@ export class GalaxyScene extends Scene {
   toast(text, type = '') {
     const t = this.el('div', `toast ${type}`);
     t.textContent = text;
-    document.body.appendChild(t);
+    this.appendToBody(t);
     this.delayed(2200, () => t.remove());
   }
 
@@ -394,7 +390,7 @@ export class GalaxyScene extends Scene {
     popup.appendChild(closeBtn);
     this.listen(overlay, 'click', (e) => { if (e.target === overlay) overlay.remove(); });
     overlay.appendChild(popup);
-    document.body.appendChild(overlay);
+    this.appendToBody(overlay);
     this._popup = overlay;
   }
 
@@ -425,7 +421,7 @@ export class GalaxyScene extends Scene {
     popup.appendChild(closeBtn);
     this.listen(overlay, 'click', (e) => { if (e.target === overlay) overlay.remove(); });
     overlay.appendChild(popup);
-    document.body.appendChild(overlay);
+    this.appendToBody(overlay);
     this._popup = overlay;
   }
 

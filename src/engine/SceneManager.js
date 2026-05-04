@@ -47,6 +47,7 @@ export class Scene {
     this._intervals = [];
     this._listeners = [];
     this._rafs = [];
+    this._bodyEls = [];
     this.container = null;
   }
 
@@ -65,10 +66,15 @@ export class Scene {
     for (const [el, event, fn, opts] of this._listeners) {
       el.removeEventListener(event, fn, opts);
     }
+    for (const el of this._bodyEls) {
+      if (el.parentNode) el.remove();
+    }
+    if (this.sfx) this.sfx.stopMusic();
     this._timers = [];
     this._intervals = [];
     this._rafs = [];
     this._listeners = [];
+    this._bodyEls = [];
   }
 
   startScene(name, data) {
@@ -96,6 +102,12 @@ export class Scene {
   listen(el, event, fn, opts) {
     el.addEventListener(event, fn, opts);
     this._listeners.push([el, event, fn, opts]);
+  }
+
+  appendToBody(el) {
+    document.body.appendChild(el);
+    this._bodyEls.push(el);
+    return el;
   }
 
   get w() { return window.innerWidth; }

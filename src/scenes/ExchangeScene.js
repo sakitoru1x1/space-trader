@@ -138,7 +138,7 @@ export class ExchangeScene extends Scene {
   toast(text) {
     const t = this.el('div', 'toast negative');
     t.textContent = text;
-    document.body.appendChild(t);
+    this.appendToBody(t);
     this.delayed(2200, () => t.remove());
   }
 }

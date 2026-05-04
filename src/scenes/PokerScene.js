@@ -17,7 +17,8 @@ function handRank(cards) {
   const vals = cards.map(c => RANKS.indexOf(c.rank)).sort((a, b) => b - a);
   const suits = cards.map(c => c.suit);
   const isFlush = suits.every(s => s === suits[0]);
-  const isStraight = vals[0] - vals[4] === 4 && new Set(vals).size === 5;
+  const isWheel = vals[0] === 12 && vals[1] === 3 && vals[2] === 2 && vals[3] === 1 && vals[4] === 0;
+  const isStraight = (vals[0] - vals[4] === 4 && new Set(vals).size === 5) || isWheel;
   const counts = {};
   for (const v of vals) counts[v] = (counts[v] || 0) + 1;
   const groups = Object.values(counts).sort((a, b) => b - a);

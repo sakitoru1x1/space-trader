@@ -10,6 +10,14 @@ export class StarField {
     this._initNebulae();
     this._onResize = () => this.resize();
     window.addEventListener('resize', this._onResize);
+    this._onVisibility = () => {
+      if (document.hidden) {
+        if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
+      } else {
+        if (!this._raf) this.animate();
+      }
+    };
+    document.addEventListener('visibilitychange', this._onVisibility);
     this.animate();
   }
 
@@ -79,6 +87,8 @@ export class StarField {
 
   destroy() {
     if (this._raf) cancelAnimationFrame(this._raf);
+    this._raf = null;
     window.removeEventListener('resize', this._onResize);
+    document.removeEventListener('visibilitychange', this._onVisibility);
   }
 }

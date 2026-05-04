@@ -136,15 +136,26 @@ export class TextQuestScene extends Scene {
       for (const [k, v] of Object.entries(opt.setFlag)) gs.setQuestFlag(k, v);
     }
 
-    if (opt.next) {
-      const nextNode = this.quest.nodes[opt.next];
+    let target = opt.next;
+    if (!target && opt.chances && opt.chances.length > 0) {
+      const total = opt.chances.reduce((s, c) => s + (c.weight || 1), 0);
+      let roll = Math.random() * total;
+      for (const c of opt.chances) {
+        roll -= (c.weight || 1);
+        if (roll <= 0) { target = c.next; break; }
+      }
+      if (!target) target = opt.chances[opt.chances.length - 1].next;
+    }
+
+    if (target) {
+      const nextNode = this.quest.nodes[target];
       if (nextNode && nextNode.text && nextNode.text.includes('КОНЕЦ')) {
         if (!gs.textQuestsCompleted) gs.textQuestsCompleted = [];
         if (!gs.textQuestsCompleted.includes(this.quest.id)) {
           gs.textQuestsCompleted.push(this.quest.id);
         }
       }
-      this.currentNode = opt.next;
+      this.currentNode = target;
       this.renderNode();
     } else {
       this.startScene('Galaxy');
