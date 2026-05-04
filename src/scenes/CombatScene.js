@@ -1,5 +1,5 @@
 import { Scene } from '../engine/SceneManager.js';
-import { WEAPONS } from '../data/galaxy.js';
+import { WEAPONS, GOODS } from '../data/galaxy.js';
 
 export class CombatScene extends Scene {
   init(data) {
@@ -425,9 +425,18 @@ export class CombatScene extends Scene {
       gs.credits += reward;
       gs.kills++;
       if (this.enemy.faction === 'pirates') gs.factionRep.military = (gs.factionRep.military || 0) + 3;
+
+      let lootMsg = '';
+      if (Math.random() < 0.4) {
+        const lootGoods = GOODS.filter(g => g.legal || this.enemy.faction === 'pirates');
+        const good = lootGoods[Math.floor(Math.random() * lootGoods.length)];
+        const qty = 1 + Math.floor(Math.random() * 4);
+        const added = gs.addCargo(good.id, qty);
+        if (added > 0) lootMsg = ` | Трофей: ${good.icon}${good.name} x${added}`;
+      }
       gs.save();
 
-      this.log(`Победа! +${reward}кр`);
+      this.log(`Победа! +${reward}кр${lootMsg}`);
       if (this.sfx) { this.sfx.explosion(); this.sfx.victory(); }
       this.setButtons(false);
 

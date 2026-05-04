@@ -1,12 +1,13 @@
 import { Scene } from '../engine/SceneManager.js';
+import { GOODS } from '../data/galaxy.js';
 
 const CATCHES = [
-  { name: 'Космический мусор', value: 5, weight: 30 },
-  { name: 'Обломок корабля', value: 20, weight: 25 },
+  { name: 'Космический мусор', value: 5, weight: 30, goodId: 'metals', qty: 1 },
+  { name: 'Обломок корабля', value: 20, weight: 25, goodId: 'metals', qty: 2 },
   { name: 'Контейнер с топливом', value: 0, fuel: 10, weight: 20 },
-  { name: 'Редкий минерал', value: 80, weight: 12 },
-  { name: 'Чёрный ящик', value: 150, weight: 8 },
-  { name: 'Артефакт древних', value: 300, weight: 4 },
+  { name: 'Редкий минерал', value: 80, weight: 12, goodId: 'artifacts', qty: 1 },
+  { name: 'Чёрный ящик', value: 150, weight: 8, goodId: 'electronics', qty: 2 },
+  { name: 'Артефакт древних', value: 300, weight: 4, goodId: 'artifacts', qty: 3 },
   { name: 'Ничего', value: 0, weight: 15 },
 ];
 
@@ -16,6 +17,7 @@ export class FishingScene extends Scene {
     this.attempts = 3;
     this.totalValue = 0;
     this.totalFuel = 0;
+    this.pendingCargo = [];
     this.log = [];
     this.phase = 'ready';
     this.barPos = 0;
@@ -166,6 +168,7 @@ export class FishingScene extends Scene {
     if (c.value > 0 || c.fuel > 0) {
       this.totalValue += c.value;
       this.totalFuel += (c.fuel || 0);
+      if (c.goodId) this.pendingCargo.push({ goodId: c.goodId, qty: c.qty });
       const text = c.fuel ? `${c.name}: +${c.fuel}F` : `${c.name}: +${c.value}кр`;
       const color = quality === 'green' ? '#44ff44' : '#ffcc44';
       this.log.push({ text, color });
@@ -183,6 +186,13 @@ export class FishingScene extends Scene {
     const gs = this.gameState;
     if (this.totalValue > 0) gs.credits += this.totalValue;
     if (this.totalFuel > 0) gs.fuel = Math.min(gs.ship.fuel + (gs.bonuses.fuel || 0), gs.fuel + this.totalFuel);
+    for (const item of this.pendingCargo) {
+      const added = gs.addCargo(item.goodId, item.qty);
+      if (added > 0) {
+        const good = GOODS.find(g => g.id === item.goodId);
+        if (good) this.toast(`+${added} ${good.icon}${good.name}`, 'positive');
+      }
+    }
     gs.save();
     this.startScene('Galaxy');
   }

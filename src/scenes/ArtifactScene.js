@@ -1,4 +1,5 @@
 import { Scene } from '../engine/SceneManager.js';
+import { GOODS } from '../data/galaxy.js';
 
 const SYMBOLS = ['◆', '★', '◈', '▲', '●', '✦'];
 
@@ -49,8 +50,11 @@ export class ArtifactScene extends Scene {
         this._actionTaken = true;
         const reward = 200 + Math.floor(Math.random() * 300);
         gs.credits += reward;
+        const added = gs.addCargo('artifacts', 1 + Math.floor(Math.random() * 2));
         gs.save();
-        this.showResult(`Сканер определил безопасный способ. +${reward}кр`, true);
+        let msg = `Сканер определил безопасный способ. +${reward}кр`;
+        if (added > 0) msg += ` | +${added} 🏺Артефакты`;
+        this.showResult(msg, true);
       });
       options.appendChild(scanBtn);
     }
@@ -190,8 +194,11 @@ export class ArtifactScene extends Scene {
       if (roll < 0.4) {
         const reward = 300 + Math.floor(Math.random() * 500);
         gs.credits += reward;
+        const added = gs.addCargo('artifacts', 2 + Math.floor(Math.random() * 3));
         gs.save();
-        this.showResult(`Артефакт активирован! +${reward}кр`, true);
+        let msg = `Артефакт активирован! +${reward}кр`;
+        if (added > 0) msg += ` | +${added} 🏺Артефакты`;
+        this.showResult(msg, true);
       } else if (roll < 0.65) {
         const fuel = 15 + Math.floor(Math.random() * 15);
         gs.fuel = Math.min(gs.ship.fuel + (gs.bonuses.fuel || 0), gs.fuel + fuel);

@@ -1,4 +1,7 @@
 import { Scene } from '../engine/SceneManager.js';
+import { GOODS } from '../data/galaxy.js';
+
+const LOOT_GOODS = GOODS.filter(g => g.legal).map(g => g.id);
 
 export class CargoGrabScene extends Scene {
   init(data) {
@@ -177,10 +180,24 @@ export class CargoGrabScene extends Scene {
     const fuel = Math.floor(this.caught * 0.3) * 5;
     gs.credits += credits;
     if (fuel > 0) gs.fuel = Math.min(gs.ship.fuel + (gs.bonuses.fuel || 0), gs.fuel + fuel);
+
+    const cargoItems = [];
+    for (let i = 0; i < this.caught; i++) {
+      if (Math.random() < 0.6) {
+        const goodId = LOOT_GOODS[Math.floor(Math.random() * LOOT_GOODS.length)];
+        const qty = 1 + Math.floor(Math.random() * 3);
+        const added = gs.addCargo(goodId, qty);
+        if (added > 0) {
+          const good = GOODS.find(g => g.id === goodId);
+          cargoItems.push(`${good.icon}${good.name} x${added}`);
+        }
+      }
+    }
     gs.save();
 
     let msg = `Поймано ${this.caught} контейнеров! +${credits}кр`;
     if (fuel > 0) msg += `, +${fuel} топлива`;
+    if (cargoItems.length) msg += `\nГруз: ${cargoItems.join(', ')}`;
     this.showResult(msg, true);
   }
 

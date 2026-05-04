@@ -1,4 +1,5 @@
 import { Scene } from '../engine/SceneManager.js';
+import { GOODS } from '../data/galaxy.js';
 
 export class TextQuestScene extends Scene {
   init(data) {
@@ -196,6 +197,26 @@ export class TextQuestScene extends Scene {
     }
     if (effect.setFlag) {
       for (const [k, v] of Object.entries(effect.setFlag)) gs.setQuestFlag(k, v);
+    }
+    if (effect.cargo) {
+      for (const [goodId, qty] of Object.entries(effect.cargo)) {
+        const added = gs.addCargo(goodId, qty);
+        if (added > 0) {
+          const good = GOODS.find(g => g.id === goodId);
+          if (good) this.toast(`+${added} ${good.icon}${good.name}`, 'positive');
+        }
+      }
+    }
+    if (effect.removeCargo) {
+      for (const [goodId, qty] of Object.entries(effect.removeCargo)) {
+        const existing = gs.cargo.find(c => c.goodId === goodId);
+        if (existing) {
+          const removed = Math.min(qty, existing.qty);
+          existing.qty -= removed;
+          gs.cargoUsed -= removed;
+          if (existing.qty <= 0) gs.cargo = gs.cargo.filter(c => c.qty > 0);
+        }
+      }
     }
     gs.save();
   }

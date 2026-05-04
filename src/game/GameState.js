@@ -300,6 +300,19 @@ export class GameState {
     return { success: true, totalCost };
   }
 
+  addCargo(goodId, qty) {
+    const maxCargo = this.ship.cargo + (this.bonuses.cargo || 0);
+    const free = maxCargo - this.cargoUsed;
+    const actual = Math.min(qty, free);
+    if (actual <= 0) return 0;
+    const existing = this.cargo.find(c => c.goodId === goodId);
+    if (existing) existing.qty += actual;
+    else this.cargo.push({ goodId, qty: actual });
+    this.cargoUsed += actual;
+    this.save();
+    return actual;
+  }
+
   sellGood(goodId, qty) {
     const existing = this.cargo.find(c => c.goodId === goodId);
     if (!existing || existing.qty < qty) return { success: false, reason: 'Нет товара!' };

@@ -1,4 +1,5 @@
 import { Scene } from '../engine/SceneManager.js';
+import { GOODS } from '../data/galaxy.js';
 
 export class ScannerScene extends Scene {
   init(data) {
@@ -16,10 +17,10 @@ export class ScannerScene extends Scene {
       if (!positions.includes(p)) positions.push(p);
     }
     const treasures = [
-      { name: 'Минерал', credits: 50 },
+      { name: 'Минерал', credits: 50, goodId: 'metals', qty: 2 },
       { name: 'Топливо', fuel: 8 },
-      { name: 'Артефакт', credits: 150 },
-      { name: 'Кристалл', credits: 80 },
+      { name: 'Артефакт', credits: 150, goodId: 'artifacts', qty: 1 },
+      { name: 'Кристалл', credits: 80, goodId: 'luxury', qty: 1 },
     ];
     for (const p of positions) {
       this.grid[p] = treasures[Math.floor(Math.random() * treasures.length)];
@@ -121,6 +122,13 @@ export class ScannerScene extends Scene {
       const t = this.grid[idx];
       if (t.credits) totalCredits += t.credits;
       if (t.fuel) totalFuel += t.fuel;
+      if (t.goodId) {
+        const added = gs.addCargo(t.goodId, t.qty);
+        if (added > 0) {
+          const good = GOODS.find(g => g.id === t.goodId);
+          if (good) this.toast(`+${added} ${good.icon}${good.name}`, 'positive');
+        }
+      }
     }
     if (totalCredits) gs.credits += totalCredits;
     if (totalFuel) gs.fuel = Math.min(gs.ship.fuel + (gs.bonuses.fuel || 0), gs.fuel + totalFuel);
