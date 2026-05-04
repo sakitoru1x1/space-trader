@@ -52,7 +52,7 @@ export class TravelAnimation {
     shipEl.style.position = 'absolute';
     shipEl.style.zIndex = '6';
     shipEl.style.transition = 'none';
-    shipEl.style.transform = `rotate(${angle - Math.PI / 2}rad)`;
+    shipEl.style.transform = `rotate(${angle + Math.PI / 2}rad)`;
     if (shipEl.parentNode !== map) {
       shipEl.remove();
       map.appendChild(shipEl);
