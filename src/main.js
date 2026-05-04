@@ -1,0 +1,80 @@
+import { SceneManager } from './engine/SceneManager.js';
+import { StarField } from './engine/StarField.js';
+import { GameState } from './game/GameState.js';
+import { SoundEngine } from './game/SoundEngine.js';
+import { BootScene } from './scenes/BootScene.js';
+import { GalaxyScene } from './scenes/GalaxyScene.js';
+import { StationScene } from './scenes/StationScene.js';
+import { CombatScene } from './scenes/CombatScene.js';
+import { EventScene } from './scenes/EventScene.js';
+import { ShipyardScene } from './scenes/ShipyardScene.js';
+import { PriceBoardScene } from './scenes/PriceBoardScene.js';
+import { TextQuestScene } from './scenes/TextQuestScene.js';
+import { PokerScene } from './scenes/PokerScene.js';
+import { HackingScene } from './scenes/HackingScene.js';
+import { FishingScene } from './scenes/FishingScene.js';
+import { ArenaScene } from './scenes/ArenaScene.js';
+import { AsteroidScene } from './scenes/AsteroidScene.js';
+import { HaggleScene } from './scenes/HaggleScene.js';
+import { RepairScene } from './scenes/RepairScene.js';
+import { ContrabandScene } from './scenes/ContrabandScene.js';
+import { InterrogationScene } from './scenes/InterrogationScene.js';
+import { ScannerScene } from './scenes/ScannerScene.js';
+import { SynthesisScene } from './scenes/SynthesisScene.js';
+import { SmuggleRunScene } from './scenes/SmuggleRunScene.js';
+import { InfiltrationScene } from './scenes/InfiltrationScene.js';
+import { EngineTuneScene } from './scenes/EngineTuneScene.js';
+import { DecipherScene } from './scenes/DecipherScene.js';
+import { DefenseScene } from './scenes/DefenseScene.js';
+import { ExchangeScene } from './scenes/ExchangeScene.js';
+import { BriberyScene } from './scenes/BriberyScene.js';
+import { ArtifactScene } from './scenes/ArtifactScene.js';
+import { CargoGrabScene } from './scenes/CargoGrabScene.js';
+import { DefuseScene } from './scenes/DefuseScene.js';
+
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) {
+  if (tg.expand) tg.expand();
+  if (tg.ready) tg.ready();
+  if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+}
+
+const gameState = new GameState();
+const sfx = new SoundEngine();
+sfx.unlock();
+
+const starfield = new StarField(document.getElementById('starfield'));
+const container = document.getElementById('game');
+const sm = new SceneManager(container, gameState, sfx);
+
+sm.register('Boot', BootScene);
+sm.register('Galaxy', GalaxyScene);
+sm.register('Station', StationScene);
+sm.register('Combat', CombatScene);
+sm.register('Event', EventScene);
+sm.register('Shipyard', ShipyardScene);
+sm.register('PriceBoard', PriceBoardScene);
+sm.register('TextQuest', TextQuestScene);
+sm.register('Poker', PokerScene);
+sm.register('Hacking', HackingScene);
+sm.register('Fishing', FishingScene);
+sm.register('Arena', ArenaScene);
+sm.register('Asteroid', AsteroidScene);
+sm.register('Haggle', HaggleScene);
+sm.register('Repair', RepairScene);
+sm.register('Contraband', ContrabandScene);
+sm.register('Interrogation', InterrogationScene);
+sm.register('Scanner', ScannerScene);
+sm.register('Synthesis', SynthesisScene);
+sm.register('SmuggleRun', SmuggleRunScene);
+sm.register('Infiltration', InfiltrationScene);
+sm.register('EngineTune', EngineTuneScene);
+sm.register('Decipher', DecipherScene);
+sm.register('Defense', DefenseScene);
+sm.register('Exchange', ExchangeScene);
+sm.register('Bribery', BriberyScene);
+sm.register('Artifact', ArtifactScene);
+sm.register('CargoGrab', CargoGrabScene);
+sm.register('Defuse', DefuseScene);
+
+sm.start('Boot');
