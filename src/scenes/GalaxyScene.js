@@ -1,5 +1,6 @@
 import { Scene } from '../engine/SceneManager.js';
 import { GOODS, FACTIONS, GALAXIES, getGalaxySystems, getNeighbors, getGalaxyRoutes } from '../data/galaxy.js';
+import { GlitchEffects } from '../effects/GlitchEffects.js';
 
 const TYPE_COLORS = {
   industrial: '#ff8844', agricultural: '#44ff44', mining: '#cc8833',
@@ -286,27 +287,39 @@ export class GalaxyScene extends Scene {
       gs._pendingTimerMessages = result.expiredTimers.map(t => `Таймер: ${t.name || t.id}`);
     }
 
-    this.delayed(400, () => {
-      if (result.encounter) {
-        if (result.encounter.type === 'combat') {
-          this.startScene('Combat', { encounter: result.encounter });
-        } else {
-          this.startScene('Event', { encounter: result.encounter });
-        }
+    const isGlitch = gs.galaxy === 'glitch';
+    const glitchChance = isGlitch ? 0.45 : 0;
+
+    if (isGlitch && Math.random() < glitchChance) {
+      if (!this._glitchFx) this._glitchFx = new GlitchEffects();
+      this._glitchFx.playRandom(() => {
+        this._afterTravel(result);
+      });
+    } else {
+      this.delayed(400, () => this._afterTravel(result));
+    }
+  }
+
+  _afterTravel(result) {
+    if (result.encounter) {
+      if (result.encounter.type === 'combat') {
+        this.startScene('Combat', { encounter: result.encounter });
       } else {
-        const r = Math.random();
-        if (r < 0.06) this.startScene('Asteroid');
-        else if (r < 0.10) this.startScene('Fishing');
-        else if (r < 0.14) this.startScene('Scanner');
-        else if (r < 0.17) this.startScene('SmuggleRun');
-        else if (r < 0.20) this.startScene('Bribery');
-        else if (r < 0.23) this.startScene('CargoGrab');
-        else if (r < 0.25) this.startScene('Decipher');
-        else if (r < 0.27) this.startScene('Artifact');
-        else if (r < 0.29) this.startScene('Defuse');
-        else this.startScene('Galaxy');
+        this.startScene('Event', { encounter: result.encounter });
       }
-    });
+    } else {
+      const r = Math.random();
+      if (r < 0.06) this.startScene('Asteroid');
+      else if (r < 0.10) this.startScene('Fishing');
+      else if (r < 0.14) this.startScene('Scanner');
+      else if (r < 0.17) this.startScene('SmuggleRun');
+      else if (r < 0.20) this.startScene('Bribery');
+      else if (r < 0.23) this.startScene('CargoGrab');
+      else if (r < 0.25) this.startScene('Decipher');
+      else if (r < 0.27) this.startScene('Artifact');
+      else if (r < 0.29) this.startScene('Defuse');
+      else this.startScene('Galaxy');
+    }
   }
 
   jumpGalaxy(targetGalaxy) {
