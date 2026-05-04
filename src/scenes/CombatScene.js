@@ -430,10 +430,7 @@ export class CombatScene extends Scene {
       this.setButtons(false);
 
       this.delayed(1500, () => {
-        const r = Math.random();
-        if (r < 0.15) this.startScene('Interrogation');
-        else if (r < 0.25) this.startScene('Defuse', { difficulty: 2, reward: { credits: 400 } });
-        else this.startScene('Galaxy');
+        this.startScene('Galaxy');
       });
       return true;
     }
