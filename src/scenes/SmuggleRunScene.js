@@ -81,18 +81,32 @@ export class SmuggleRunScene extends Scene {
     this.elapsed += dt;
 
     this.spawnTimer += dt;
-    const spawnRate = Math.max(400, 900 - this.elapsed * 0.04);
+    const spawnRate = Math.max(600, 1000 - this.elapsed * 0.03);
     if (this.spawnTimer > spawnRate) {
       this.spawnTimer = 0;
       const scanLane = Math.floor(Math.random() * 3);
-      const wide = Math.random() < 0.3;
-      this.scanners.push({
-        lane: scanLane,
-        wide,
-        y: -30,
-        vy: 2.5 + this.elapsed * 0.0002,
-        h: wide ? 50 : 30,
-      });
+      const wide = Math.random() < 0.25;
+      const occupiedLanes = wide ? [scanLane, (scanLane + 1) % 3] : [scanLane];
+      const shipY = this.canvas.height - 40;
+      const nearbyBlockedLanes = new Set();
+      for (const s of this.scanners) {
+        if (s.y > shipY - 120 && s.y < shipY + 40) {
+          nearbyBlockedLanes.add(s.lane);
+          if (s.wide) nearbyBlockedLanes.add((s.lane + 1) % 3);
+        }
+      }
+      for (const l of occupiedLanes) nearbyBlockedLanes.add(l);
+      if (nearbyBlockedLanes.size >= 3) {
+        this.spawnTimer = spawnRate * 0.5;
+      } else {
+        this.scanners.push({
+          lane: scanLane,
+          wide,
+          y: -30,
+          vy: 2.5 + this.elapsed * 0.00015,
+          h: wide ? 45 : 28,
+        });
+      }
     }
 
     const ch = this.canvas.height;
@@ -140,18 +154,19 @@ export class SmuggleRunScene extends Scene {
     }
 
     for (const s of this.scanners) {
-      const startLane = s.lane;
-      const endLane = s.wide ? (s.lane + 1) % 3 : s.lane;
-      const x1 = Math.min(startLane, endLane) * this.laneWidth;
-      const x2 = (Math.max(startLane, endLane) + 1) * this.laneWidth;
-      ctx.fillStyle = 'rgba(255,0,0,0.2)';
-      ctx.fillRect(x1, s.y, x2 - x1, s.h);
-      ctx.strokeStyle = '#ff4444';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x1, s.y + s.h / 2);
-      ctx.lineTo(x2, s.y + s.h / 2);
-      ctx.stroke();
+      const lanes = s.wide ? [s.lane, (s.lane + 1) % 3] : [s.lane];
+      for (const l of lanes) {
+        const x1 = l * this.laneWidth;
+        const x2 = x1 + this.laneWidth;
+        ctx.fillStyle = 'rgba(255,0,0,0.2)';
+        ctx.fillRect(x1, s.y, x2 - x1, s.h);
+        ctx.strokeStyle = '#ff4444';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, s.y + s.h / 2);
+        ctx.lineTo(x2, s.y + s.h / 2);
+        ctx.stroke();
+      }
     }
 
     const shipCenterX = this.lane * this.laneWidth + this.laneWidth / 2;

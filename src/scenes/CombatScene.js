@@ -33,6 +33,13 @@ export class CombatScene extends Scene {
     title.textContent = 'COMBAT';
     scene.appendChild(title);
 
+    if (this.combatLog.length <= 1) {
+      const hint = this.el('div', 'text-center');
+      hint.style.cssText = 'color:#667;font-size:11px;margin-bottom:6px';
+      hint.textContent = 'Атака наносит урон, защита блокирует. Ракеты/мины - мощнее, но ограничены. Дроны бьют каждый ход.';
+      scene.appendChild(hint);
+    }
+
     const enemyTitle = this.el('div', 'text-center');
     enemyTitle.style.cssText = 'color:#ff6644;font-size:13px;margin-bottom:8px';
     enemyTitle.textContent = this.enemy.enemy || 'Враг';

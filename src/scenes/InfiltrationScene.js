@@ -37,6 +37,12 @@ export class InfiltrationScene extends Scene {
     title.textContent = 'Проникновение';
     content.appendChild(title);
 
+    if (this.phase === 'play' && this.currentRoom === 0 && this.alertLevel === 0) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Пробирайся через комнаты. Красться тихо, взлом средне, штурм шумно. Тревога 100% = провал!';
+      content.appendChild(hint);
+    }
+
     if (this.phase === 'play') {
       const alertBar = this.el('div', '');
       alertBar.style.cssText = 'width:200px;margin:8px auto';

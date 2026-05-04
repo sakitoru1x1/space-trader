@@ -27,6 +27,12 @@ export class DefenseScene extends Scene {
     title.textContent = 'Оборона станции';
     content.appendChild(title);
 
+    if (this.phase === 'play' && this.wave === 0 && this.stationHp === 100) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Выбирай тактику: фокус бьёт сильно одного, веер - всех, щит защищает станцию. Не дай HP станции упасть до 0!';
+      content.appendChild(hint);
+    }
+
     if (this.phase === 'play') {
       const hpBar = this.el('div', '');
       hpBar.style.cssText = 'width:200px;margin:8px auto';

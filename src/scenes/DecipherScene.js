@@ -34,6 +34,11 @@ export class DecipherScene extends Scene {
     content.appendChild(title);
 
     if (this.phase === 'play') {
+      if (this.guesses.length === 0) {
+        const hint = this.el('div', 'text-center text-small text-gray mb-8');
+        hint.textContent = 'Угадай код! Зелёный = верный символ на месте, жёлтый = верный символ не на месте.';
+        content.appendChild(hint);
+      }
       const info = this.el('div', 'text-center text-small text-gray mb-8');
       info.textContent = `Попытка ${this.guesses.length + 1}/${this.maxGuesses} | Код: ${this.codeLength} символов`;
       content.appendChild(info);

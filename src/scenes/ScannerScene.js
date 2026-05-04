@@ -42,6 +42,11 @@ export class ScannerScene extends Scene {
     title.textContent = 'Сканер аномалий';
     content.appendChild(title);
 
+    if (this.scans === 3 && this.found.length === 0) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Жми на клетки чтобы сканировать область 3x3. Найди спрятанные ресурсы за 3 попытки!';
+      content.appendChild(hint);
+    }
     const info = this.el('div', 'text-center text-small text-gray mb-8');
     info.textContent = `Сканирований: ${this.scans} | Найдено: ${this.found.length}`;
     content.appendChild(info);

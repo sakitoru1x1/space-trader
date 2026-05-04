@@ -32,6 +32,12 @@ export class ExchangeScene extends Scene {
     title.textContent = `Биржа | Раунд ${this.rounds + 1}/${this.maxRounds}`;
     content.appendChild(title);
 
+    if (this.rounds === 0) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Покупай дешёво, продавай дорого! Стрелки показывают тренд. После 5 раундов все акции продаются.';
+      content.appendChild(hint);
+    }
+
     const balance = this.el('div', 'text-center text-gold mb-8');
     balance.style.fontSize = '14px';
     balance.textContent = `Баланс: ${gs.credits}кр`;

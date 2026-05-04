@@ -51,6 +51,12 @@ export class InterrogationScene extends Scene {
     title.textContent = 'Допрос';
     content.appendChild(title);
 
+    if (this.round === 1) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Отвечай на вопросы. Дерзкие ответы рискованнее, но дают больше. Не доводи подозрительность до 100%!';
+      content.appendChild(hint);
+    }
+
     const roundInfo = this.el('div', 'text-center text-small text-gray mb-8');
     roundInfo.textContent = `Вопрос ${this.round}/${this.maxRounds}`;
     content.appendChild(roundInfo);

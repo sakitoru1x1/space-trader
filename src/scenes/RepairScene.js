@@ -39,6 +39,11 @@ export class RepairScene extends Scene {
     content.appendChild(title);
 
     if (this.phase === 'play') {
+      if (this.progress === 0 && this.mistakes === 0) {
+        const hint = this.el('div', 'text-center text-small text-gray mb-8');
+        hint.textContent = 'Жми символы в порядке, показанном сверху. Жёлтый - текущий. 3 ошибки = провал.';
+        content.appendChild(hint);
+      }
       const info = this.el('div', 'text-center text-small text-gray mb-8');
       info.textContent = `Прогресс: ${this.progress}% | Ошибки: ${this.mistakes}/${this.maxMistakes}`;
       content.appendChild(info);

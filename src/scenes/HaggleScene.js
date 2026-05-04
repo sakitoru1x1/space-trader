@@ -26,6 +26,12 @@ export class HaggleScene extends Scene {
     title.textContent = 'Базар';
     content.appendChild(title);
 
+    if (this.round === 0 && !this.deal) {
+      const hint = this.el('div', 'text-center text-small text-gray mb-8');
+      hint.textContent = 'Торгуйся! Сбивай цену или принимай предложение. Будь жаден - торговец может уйти.';
+      content.appendChild(hint);
+    }
+
     if (this.deal) {
       this.renderDeal(content);
     } else if (this.round >= this.maxRounds) {
