@@ -929,17 +929,12 @@ export class GameState {
       case 'smuggler_buy':
         if (this.credits >= 200) {
           this.credits -= 200;
-          const maxCargo = this.ship.cargo + (this.bonuses.cargo || 0);
-          if (this.cargoUsed < maxCargo) {
-            const goods = GOODS.filter(g => Math.random() > 0.5);
-            const g = goods.length > 0 ? goods[0] : GOODS[Math.floor(Math.random() * GOODS.length)];
-            const qty = 2 + Math.floor(Math.random() * 4);
-            const actualQty = Math.min(qty, maxCargo - this.cargoUsed);
-            const existing = this.cargo.find(c => c.goodId === g.id);
-            if (existing) existing.qty += actualQty;
-            else this.cargo.push({ goodId: g.id, qty: actualQty });
-            this.cargoUsed += actualQty;
-            results.push(`Купили ${actualQty}x ${g.icon}${g.name}. Может, краденое...`);
+          const goods = GOODS.filter(g => Math.random() > 0.5);
+          const g = goods.length > 0 ? goods[0] : GOODS[Math.floor(Math.random() * GOODS.length)];
+          const qty = 2 + Math.floor(Math.random() * 4);
+          const added = this.addCargo(g.id, qty);
+          if (added > 0) {
+            results.push(`Купили ${added}x ${g.icon}${g.name}. Может, краденое...`);
           } else {
             results.push('Трюм полон! Зря потратили деньги. -200 кр');
           }

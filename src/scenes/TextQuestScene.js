@@ -63,6 +63,7 @@ export class TextQuestScene extends Scene {
 
     if (node.ending && node.result) {
       const r = node.result;
+      const hasReward = Object.keys(r).length > 0;
       if (r.credits) gs.credits += r.credits;
       if (r.damage) gs.hp = Math.max(1, gs.hp - r.damage);
       if (r.heal) gs.hp = Math.min(gs.ship.hp + (gs.bonuses.hp || 0), gs.hp + r.heal);
@@ -79,11 +80,47 @@ export class TextQuestScene extends Scene {
       if (r.flags) {
         for (const [k, v] of Object.entries(r.flags)) gs.setQuestFlag(k, v);
       }
-      if (!gs.textQuestsCompleted) gs.textQuestsCompleted = [];
-      if (!gs.textQuestsCompleted.includes(this.quest.id)) {
-        gs.textQuestsCompleted.push(this.quest.id);
+      if (r.teleport === 'random') {
+        const systems = gs.visited.length > 1 ? gs.visited.filter(s => s !== gs.currentSystem) : [gs.currentSystem];
+        gs.currentSystem = systems[Math.floor(Math.random() * systems.length)];
+      }
+      if (r.timer && gs.startTimer) {
+        gs.startTimer(r.timer.id, r.timer.days, {
+          name: r.timer.name,
+          targetSystem: r.timer.targetSystem,
+          onExpire: r.timer.onExpire,
+        });
+      }
+      if (hasReward || node.forceComplete) {
+        if (!gs.textQuestsCompleted) gs.textQuestsCompleted = [];
+        if (!gs.textQuestsCompleted.includes(this.quest.id)) {
+          gs.textQuestsCompleted.push(this.quest.id);
+        }
       }
       gs.save();
+    }
+
+    if (node.ending && node.result && Object.keys(node.result).length > 0) {
+      const rewards = this.el('div', '');
+      rewards.style.cssText = 'margin:8px 0;padding:8px;border-radius:6px;background:rgba(20,20,50,0.6);text-align:center;font-size:12px';
+      const lines = [];
+      const r = node.result;
+      if (r.credits > 0) lines.push(`<span style="color:#FFD700">+${r.credits}кр</span>`);
+      if (r.credits < 0) lines.push(`<span style="color:#ff4444">${r.credits}кр</span>`);
+      if (r.reputation > 0) lines.push(`<span style="color:#44aaff">+${r.reputation} реп.</span>`);
+      if (r.reputation < 0) lines.push(`<span style="color:#ff4444">${r.reputation} реп.</span>`);
+      if (r.damage) lines.push(`<span style="color:#ff4444">-${r.damage} HP</span>`);
+      if (r.heal) lines.push(`<span style="color:#44ff44">+${r.heal} HP</span>`);
+      if (r.factionRep) {
+        for (const [fac, val] of Object.entries(r.factionRep)) {
+          const color = val > 0 ? '#44aaff' : '#ff4444';
+          lines.push(`<span style="color:${color}">${val > 0 ? '+' : ''}${val} ${fac}</span>`);
+        }
+      }
+      if (lines.length > 0) {
+        rewards.innerHTML = lines.join(' &nbsp; ');
+        content.appendChild(rewards);
+      }
     }
 
     const options = this.el('div', 'event-options');
@@ -95,6 +132,7 @@ export class TextQuestScene extends Scene {
           if (opt.requires.credits && gs.credits < opt.requires.credits) locked = true;
           if (opt.requires.flag && !gs.getQuestFlag(opt.requires.flag)) locked = true;
         }
+        if (opt.cost && opt.cost.credits && gs.credits < opt.cost.credits) locked = true;
         const btn = this.el('button', 'event-option');
         btn.textContent = opt.text || 'Далее';
         if (locked) {
@@ -131,6 +169,18 @@ export class TextQuestScene extends Scene {
       }
     }
 
+    if (opt.cost) {
+      if (opt.cost.credits) {
+        gs.credits -= opt.cost.credits;
+        if (gs.credits < 0) gs.credits = 0;
+      }
+      if (opt.cost.fuel) {
+        gs.fuel -= opt.cost.fuel;
+        if (gs.fuel < 0) gs.fuel = 0;
+      }
+      gs.save();
+    }
+
     if (opt.effect) this.applyEffect(opt.effect, gs);
 
     if (opt.setFlag) {
@@ -149,13 +199,6 @@ export class TextQuestScene extends Scene {
     }
 
     if (target) {
-      const nextNode = this.quest.nodes[target];
-      if (nextNode && nextNode.text && nextNode.text.includes('КОНЕЦ')) {
-        if (!gs.textQuestsCompleted) gs.textQuestsCompleted = [];
-        if (!gs.textQuestsCompleted.includes(this.quest.id)) {
-          gs.textQuestsCompleted.push(this.quest.id);
-        }
-      }
       this.currentNode = target;
       this.renderNode();
     } else {
@@ -164,22 +207,67 @@ export class TextQuestScene extends Scene {
   }
 
   checkRequirement(check, gs) {
-    if (check.stat === 'credits' && gs.credits < (check.min || 0)) return false;
-    if (check.stat === 'fuel' && gs.fuel < (check.min || 0)) return false;
-    if (check.stat === 'scanner' && !gs.bonuses.scanner) return false;
+    if (check.flag && check.stat !== 'flag') {
+      return !!gs.getQuestFlag(check.flag) === !!(check.flagValue !== undefined ? check.flagValue : true);
+    }
+
+    if (!check.stat && check.reputation) {
+      const rep = gs.factionRep[check.reputation] || 0;
+      return rep >= (check.min || 0);
+    }
+    if (!check.stat && check.cargo) {
+      const has = gs.cargo.find(c => c.goodId === check.cargo);
+      return has && has.qty >= (check.min || 1);
+    }
+    if (!check.stat && check.mercenary !== undefined) {
+      return !!gs.mercenary;
+    }
+
+    if (check.stat === 'credits') return gs.credits >= (check.min || 0);
+    if (check.stat === 'fuel') return gs.fuel >= (check.min || 0);
+    if (check.stat === 'scanner') return !!gs.bonuses.scanner;
     if (check.stat === 'reputation' && check.faction) {
-      const rep = gs.factionRep[check.faction] || 0;
-      if (rep < (check.min || 0)) return false;
+      return (gs.factionRep[check.faction] || 0) >= (check.min || 0);
     }
     if (check.stat === 'cargo') {
-      const has = gs.cargo.find(c => c.goodId === check.goodId);
-      if (!has || has.qty < (check.min || 1)) return false;
+      const goodId = check.goodId || check.has;
+      const has = gs.cargo.find(c => c.goodId === goodId);
+      if (check.min && !goodId) return gs.cargoUsed >= check.min;
+      return has && has.qty >= (check.min || 1);
     }
     if (check.stat === 'flag') {
-      if (gs.getQuestFlag(check.key) !== check.value) return false;
+      return gs.getQuestFlag(check.key) === check.value;
     }
     if (check.stat === 'roll') {
-      if (Math.random() > (check.chance || 0.5)) return false;
+      return Math.random() <= (check.chance || 0.5);
+    }
+    if (check.stat === 'attack') {
+      const total = gs.ship.attack + (gs.bonuses.dmgBoost || 0);
+      return total >= (check.min || 0);
+    }
+    if (check.stat === 'speed') {
+      return gs.getEffective('speed') >= (check.min || 0);
+    }
+    if (check.stat === 'defense') {
+      return gs.getEffective('defense') >= (check.min || 0);
+    }
+    if (check.stat === 'hp') {
+      return gs.hp >= (check.min || 0);
+    }
+    if (check.stat === 'kills') {
+      return (gs.kills || 0) >= (check.min || 0);
+    }
+    if (check.stat === 'weapon') {
+      if (check.value) return gs.weapons && gs.weapons.includes(check.value);
+      return gs.ship.attack >= (check.min || 0);
+    }
+    if (check.stat === 'mercenary') {
+      return !!gs.mercenary;
+    }
+    if (check.stat === 'timer') {
+      if (!check.timerId) return true;
+      const timer = gs.getTimer ? gs.getTimer(check.timerId) : null;
+      return !!timer && gs.day < timer.deadlineDay;
     }
     return true;
   }
