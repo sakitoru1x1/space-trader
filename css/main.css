@@ -806,3 +806,41 @@ html, body {
   0%, 100% { transform: scale(1); filter: brightness(1); }
   50% { transform: scale(1.008); filter: brightness(0.85); }
 }
+
+.travel-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+.ship-idle-glow {
+  filter: drop-shadow(0 0 4px var(--engine-color, #44aaff));
+  animation: engine-idle-pulse 2s ease-in-out infinite;
+}
+@keyframes engine-idle-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--engine-color, #44aaff)); }
+  50% { filter: drop-shadow(0 0 10px var(--engine-color, #44aaff)); }
+}
+.quest-tabs {
+  display: flex; gap: 0; margin-bottom: 12px; border-bottom: 1px solid #1a1a3e;
+}
+.quest-tab {
+  flex: 1; padding: 8px 4px; text-align: center; font-size: 13px; cursor: pointer;
+  color: #556; background: transparent; border: none; border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.quest-tab.active {
+  color: #FFD700; border-bottom-color: #FFD700;
+}
+.quest-tab:hover { color: #aab; }
+.mission-item {
+  margin-bottom: 10px; padding: 8px; border-bottom: 1px solid #1a1a3e;
+}
+.mission-item.completed { opacity: 0.45; }
+.mission-title { color: #FFD700; font-weight: bold; font-size: 14px; }
+.mission-title.completed { color: #556; }
+.mission-desc { color: #778899; font-size: 12px; margin-top: 4px; }
+.mission-status { font-size: 11px; margin-top: 4px; }
+.mission-status.active { color: #44ff44; }
+.mission-status.done { color: #556; }

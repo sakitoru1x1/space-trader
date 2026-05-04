@@ -1,7 +1,10 @@
 import { Scene } from '../engine/SceneManager.js';
-import { GOODS, FACTIONS, GALAXIES, getGalaxySystems, getNeighbors, getGalaxyRoutes } from '../data/galaxy.js';
+import { GOODS, FACTIONS, GALAXIES, SHIPS, getGalaxySystems, getNeighbors, getGalaxyRoutes } from '../data/galaxy.js';
 import { GlitchEffects } from '../effects/GlitchEffects.js';
 import { VoidEffects } from '../effects/VoidEffects.js';
+import { TravelAnimation } from '../effects/TravelAnimation.js';
+import { TEXT_QUESTS } from '../data/textQuests.js';
+import { QUEST_CHAINS } from '../data/questChains.js';
 
 const TYPE_COLORS = {
   industrial: '#ff8844', agricultural: '#44ff44', mining: '#cc8833',
@@ -144,13 +147,18 @@ export class GalaxyScene extends Scene {
       };
       dot.appendChild(planetImg);
       if (isCurrent) {
-        const shipSprite = this.el('img');
+        this._shipSprite = this.el('img');
         const shipSpriteId = gs.shipType === 'scout' ? 'player' : gs.shipType;
-        shipSprite.src = `sprites/ship-${shipSpriteId}.png`;
+        this._shipSprite.src = `sprites/ship-${shipSpriteId}.png`;
         const shipSize = desktop ? 40 : 32;
-        shipSprite.style.cssText = `position:absolute;width:${shipSize}px;height:${shipSize}px;object-fit:contain;left:-${shipSize + 4}px;top:${Math.floor((dotSize - shipSize) / 2)}px;transform:rotate(-90deg);z-index:5;pointer-events:none`;
-        shipSprite.onerror = () => { shipSprite.style.display = 'none'; };
-        planet.appendChild(shipSprite);
+        this._shipSize = shipSize;
+        this._shipSprite.style.cssText = `position:absolute;width:${shipSize}px;height:${shipSize}px;object-fit:contain;z-index:5;pointer-events:none;transform:rotate(-90deg)`;
+        this._shipSprite.style.left = `${px - shipSize / 2 - shipSize - 4}px`;
+        this._shipSprite.style.top = `${py - shipSize / 2 + Math.floor((dotSize - shipSize) / 2)}px`;
+        this._shipSprite.onerror = () => { this._shipSprite.style.display = 'none'; };
+        this._shipHomeX = px - shipSize / 2;
+        this._shipHomeY = py;
+        map.appendChild(this._shipSprite);
       }
       planet.appendChild(dot);
 
@@ -198,6 +206,22 @@ export class GalaxyScene extends Scene {
       }
     }
 
+    this._map = map;
+    this._sx = sx;
+    this._sy = sy;
+    this._allSystems = allSystems;
+    this._travelAnim = new TravelAnimation();
+    this._traveling = false;
+
+    if (this._shipSprite && this._shipHomeX != null) {
+      this._travelAnim.startIdle({
+        map, shipEl: this._shipSprite,
+        x: this._shipHomeX, y: this._shipHomeY,
+        shipType: gs.shipType, isDesktop: this.isDesktop,
+      });
+      if (this.sfx) this.sfx.startEngine(gs.shipType, true);
+    }
+
     mapViewport.appendChild(map);
     scene.appendChild(mapViewport);
 
@@ -235,6 +259,7 @@ export class GalaxyScene extends Scene {
 
     // Keyboard
     this._onKey = (e) => {
+      if (this._traveling) return;
       const k = e.key.toLowerCase();
       if (k >= '1' && k <= '9') {
         const idx = parseInt(k) - 1;
@@ -266,6 +291,7 @@ export class GalaxyScene extends Scene {
   }
 
   travelTo(targetSys) {
+    if (this._traveling) return;
     const gs = this.gameState;
     const result = gs.travel(targetSys.id);
     if (!result.success) {
@@ -274,6 +300,7 @@ export class GalaxyScene extends Scene {
       return;
     }
 
+    this._traveling = true;
     if (this.sfx) this.sfx.warp();
     const costs = [];
     if (result.fuelCost) costs.push(`-${result.fuelCost} топл`);
@@ -285,44 +312,67 @@ export class GalaxyScene extends Scene {
       gs._pendingTimerMessages = result.expiredTimers.map(t => `Таймер: ${t.name || t.id}`);
     }
 
-    const isGlitch = gs.galaxy === 'glitch';
-    const isVoid = gs.galaxy === 'void';
+    const fromX = this._shipHomeX;
+    const fromY = this._shipHomeY;
+    const target = this._allSystems.find(s => s.id === targetSys.id);
+    const toX = target ? target.x * this._sx + 20 : fromX;
+    const toY = target ? target.y * this._sy : fromY;
+    const shipSpeed = gs.getEffective('speed');
 
-    if (isGlitch) {
-      if (!this._glitchFx) this._glitchFx = new GlitchEffects();
-      if (gs._glitchCounter == null) {
-        gs._glitchCounter = 0;
-        gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
+    if (this.sfx) this.sfx.stopEngine();
+    if (this.sfx) this.sfx.startEngine(gs.shipType, false);
+
+    const onArrival = () => {
+      this._traveling = false;
+      if (this.sfx) this.sfx.stopEngine();
+
+      const isGlitch = gs.galaxy === 'glitch';
+      const isVoid = gs.galaxy === 'void';
+
+      if (isGlitch) {
+        if (!this._glitchFx) this._glitchFx = new GlitchEffects();
+        if (gs._glitchCounter == null) {
+          gs._glitchCounter = 0;
+          gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
+        }
+        gs._glitchCounter++;
+        if (gs._glitchCounter >= gs._glitchThreshold) {
+          gs._glitchCounter = 0;
+          gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
+          this._glitchFx.playRandom(() => this._afterTravel(result));
+          return;
+        }
       }
-      gs._glitchCounter++;
-      if (gs._glitchCounter >= gs._glitchThreshold) {
-        gs._glitchCounter = 0;
-        gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
-        this._glitchFx.playRandom(() => {
-          this._afterTravel(result);
-        });
-        return;
+
+      if (isVoid) {
+        if (!this._voidFx) this._voidFx = new VoidEffects();
+        if (gs._voidCounter == null) {
+          gs._voidCounter = 0;
+          gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
+        }
+        gs._voidCounter++;
+        if (gs._voidCounter >= gs._voidThreshold) {
+          gs._voidCounter = 0;
+          gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
+          this._voidFx.playRandom(() => this._afterTravel(result));
+          return;
+        }
       }
+
+      this._afterTravel(result);
+    };
+
+    if (this._travelAnim && this._shipSprite && this._map) {
+      this._travelAnim.animate({
+        map: this._map, shipEl: this._shipSprite,
+        fromX, fromY, toX, toY,
+        shipType: gs.shipType, shipSpeed,
+        isDesktop: this.isDesktop,
+        onComplete: onArrival,
+      });
+    } else {
+      this.delayed(400, onArrival);
     }
-
-    if (isVoid) {
-      if (!this._voidFx) this._voidFx = new VoidEffects();
-      if (gs._voidCounter == null) {
-        gs._voidCounter = 0;
-        gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
-      }
-      gs._voidCounter++;
-      if (gs._voidCounter >= gs._voidThreshold) {
-        gs._voidCounter = 0;
-        gs._voidThreshold = 1 + Math.floor(Math.random() * 40);
-        this._voidFx.playRandom(() => {
-          this._afterTravel(result);
-        });
-        return;
-      }
-    }
-
-    this.delayed(400, () => this._afterTravel(result));
   }
 
   _afterTravel(result) {
@@ -400,21 +450,47 @@ export class GalaxyScene extends Scene {
     const popup = this.el('div', 'popup');
     popup.innerHTML = `<div class="popup-title">Квесты (${gs.questsCompleted})</div>`;
 
-    const active = (gs.quests || []).filter(q => !q.completed);
-    if (!active.length) {
-      popup.innerHTML += '<div style="text-align:center;color:#556;padding:20px">Нет активных квестов</div>';
-    } else {
-      for (const q of active) {
-        const qDiv = this.el('div', '');
-        qDiv.style.cssText = 'margin-bottom:12px;padding:8px;border-bottom:1px solid #1a1a3e';
-        qDiv.innerHTML = `
-          <div style="color:#FFD700;font-weight:bold;font-size:14px">${q.title}</div>
-          <div style="color:#778899;font-size:12px;margin-top:4px">${q.desc || ''}</div>
-          <div style="color:#44ff44;font-size:12px;margin-top:4px">${q.reward}кр</div>
-        `;
-        popup.appendChild(qDiv);
+    const tabs = this.el('div', 'quest-tabs');
+    const tabDelivery = this.el('div', 'quest-tab active', 'Задания');
+    const tabMissions = this.el('div', 'quest-tab', 'Миссии');
+    tabs.appendChild(tabDelivery);
+    tabs.appendChild(tabMissions);
+    popup.appendChild(tabs);
+
+    const content = this.el('div', '');
+    popup.appendChild(content);
+
+    const showDelivery = () => {
+      content.innerHTML = '';
+      tabDelivery.classList.add('active');
+      tabMissions.classList.remove('active');
+      const active = (gs.quests || []).filter(q => !q.completed);
+      if (!active.length) {
+        content.innerHTML = '<div style="text-align:center;color:#556;padding:20px">Нет активных заданий</div>';
+      } else {
+        for (const q of active) {
+          const qDiv = this.el('div', '');
+          qDiv.style.cssText = 'margin-bottom:12px;padding:8px;border-bottom:1px solid #1a1a3e';
+          qDiv.innerHTML = `
+            <div style="color:#FFD700;font-weight:bold;font-size:14px">${q.title}</div>
+            <div style="color:#778899;font-size:12px;margin-top:4px">${q.desc || ''}</div>
+            <div style="color:#44ff44;font-size:12px;margin-top:4px">${q.reward}кр</div>
+          `;
+          content.appendChild(qDiv);
+        }
       }
-    }
+    };
+
+    const showMissions = () => {
+      content.innerHTML = '';
+      tabMissions.classList.add('active');
+      tabDelivery.classList.remove('active');
+      this._renderMissions(content, gs);
+    };
+
+    this.listen(tabDelivery, 'click', showDelivery);
+    this.listen(tabMissions, 'click', showMissions);
+    showDelivery();
 
     const closeBtn = this.el('button', 'popup-close', `Закрыть${this.isDesktop ? ' [Esc]' : ''}`);
     this.listen(closeBtn, 'click', () => overlay.remove());
@@ -423,6 +499,52 @@ export class GalaxyScene extends Scene {
     overlay.appendChild(popup);
     this.appendToBody(overlay);
     this._popup = overlay;
+  }
+
+  _renderMissions(container, gs) {
+    const allQuests = [...TEXT_QUESTS, ...QUEST_CHAINS];
+    const flags = gs.questFlags || {};
+    const completed = gs.textQuestsCompleted || [];
+
+    const started = [];
+    const done = [];
+
+    for (const q of allQuests) {
+      const isCompleted = completed.includes(q.id);
+      const hasFlag = Object.keys(flags).some(k => k.startsWith(q.id + '_') || k === q.id);
+      const reqsMet = q.requires && Object.entries(q.requires).every(([k, v]) => flags[k] === v);
+
+      if (isCompleted) {
+        done.push(q);
+      } else if (hasFlag || reqsMet) {
+        started.push(q);
+      }
+    }
+
+    if (!started.length && !done.length) {
+      container.innerHTML = '<div style="text-align:center;color:#556;padding:20px">Нет начатых миссий</div>';
+      return;
+    }
+
+    for (const q of started) {
+      const div = this.el('div', 'mission-item');
+      div.innerHTML = `
+        <div class="mission-title">${q.title}</div>
+        <div class="mission-desc">${q.nodes?.start?.text?.slice(0, 100) || ''}...</div>
+        <div class="mission-status" style="color:#ffaa00">В процессе</div>
+      `;
+      container.appendChild(div);
+    }
+
+    for (const q of done) {
+      const div = this.el('div', 'mission-item');
+      div.style.opacity = '0.5';
+      div.innerHTML = `
+        <div class="mission-title" style="color:#667">${q.title}</div>
+        <div class="mission-status" style="color:#44ff44">Завершена</div>
+      `;
+      container.appendChild(div);
+    }
   }
 
   closePopup() {
@@ -552,6 +674,8 @@ export class GalaxyScene extends Scene {
 
   destroy() {
     this.closePopup();
+    if (this._travelAnim) { this._travelAnim.destroy(); this._travelAnim = null; }
+    if (this.sfx) this.sfx.stopEngine();
     super.destroy();
   }
 }

@@ -30,6 +30,8 @@ export class SoundEngine {
     this._musicNodes = [];
     this._musicType = null;
     this._musicTimers = [];
+    this._engineNodes = null;
+    this._engineType = null;
   }
 
   _ensure() {
@@ -1226,5 +1228,134 @@ export class SoundEngine {
     // Slow ethereal scanning tone
     this._filteredOsc('sine', 300 + Math.random() * 200, 1.2, 0.025, 150, 'lowpass', 500, 200);
     this._osc('triangle', 200 + Math.random() * 100, 0.8, 0.015);
+  }
+
+  startEngine(shipType, idle = false) {
+    if (this.muted || this.disabled) return;
+    if (this._engineType === shipType && this._engineNodes) return;
+    this.stopEngine();
+    const c = this._ensure();
+    if (!c) return;
+    const out = this._out();
+    const nodes = [];
+    const v = idle ? 0.4 : 1;
+
+    const makeNoise = (dur, filterType, filterFreq, vol) => {
+      const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
+      const f = c.createBiquadFilter();
+      f.type = filterType;
+      f.frequency.value = filterFreq;
+      const g = c.createGain();
+      g.gain.value = vol * v;
+      src.connect(f).connect(g).connect(out);
+      src.start();
+      nodes.push(src, f, g);
+      return { src, filter: f, gain: g };
+    };
+
+    const makeOsc = (type, freq, vol, filterType, filterFreq, filterQ) => {
+      const osc = c.createOscillator();
+      osc.type = type;
+      osc.frequency.value = freq;
+      const g = c.createGain();
+      g.gain.value = vol * v;
+      if (filterType) {
+        const f = c.createBiquadFilter();
+        f.type = filterType;
+        f.frequency.value = filterFreq;
+        if (filterQ) f.Q.value = filterQ;
+        osc.connect(f).connect(g).connect(out);
+        nodes.push(osc, f, g);
+      } else {
+        osc.connect(g).connect(out);
+        nodes.push(osc, g);
+      }
+      osc.start();
+      return { osc, gain: g };
+    };
+
+    const makeLfo = (freq, target, amount) => {
+      const lfo = c.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = freq;
+      const lg = c.createGain();
+      lg.gain.value = amount;
+      lfo.connect(lg).connect(target);
+      lfo.start();
+      nodes.push(lfo, lg);
+    };
+
+    if (shipType === 'scout') {
+      const p = makeOsc('sine', 800, 0.04, 'bandpass', 900, 3);
+      makeLfo(6, p.osc.frequency, 30);
+      makeOsc('triangle', 1200, 0.02, 'bandpass', 1400);
+      makeNoise(2, 'highpass', 2000, 0.015);
+
+    } else if (shipType === 'trader') {
+      makeOsc('sawtooth', 80, 0.06, 'lowpass', 120);
+      makeOsc('sine', 60, 0.03);
+      const n = makeNoise(2, 'lowpass', 200, 0.025);
+      makeLfo(0.5, n.gain.gain, 0.012);
+
+    } else if (shipType === 'fighter') {
+      const p = makeOsc('sawtooth', 120, 0.07, 'bandpass', 200, 4);
+      makeLfo(3, p.osc.frequency, 20);
+      makeOsc('square', 180, 0.03, 'lowpass', 250);
+      makeNoise(2, 'bandpass', 600, 0.05);
+
+    } else if (shipType === 'cruiser') {
+      makeOsc('sine', 50, 0.05);
+      makeOsc('sawtooth', 55, 0.03, 'lowpass', 70);
+      makeOsc('sine', 100, 0.02);
+      const n = makeNoise(2, 'lowpass', 100, 0.02);
+      makeLfo(0.2, n.gain.gain, 0.01);
+
+    } else if (shipType === 'freighter') {
+      const p = makeOsc('square', 35, 0.06, 'lowpass', 50, 5);
+      const lfo = c.createOscillator();
+      lfo.type = 'square';
+      lfo.frequency.value = 1.5;
+      const lg = c.createGain();
+      lg.gain.value = 0.03 * v;
+      lfo.connect(lg).connect(p.gain.gain);
+      lfo.start();
+      nodes.push(lfo, lg);
+      makeOsc('sawtooth', 70, 0.025, 'lowpass', 90);
+      makeNoise(2, 'lowpass', 150, 0.03);
+
+    } else if (shipType === 'phantom') {
+      makeOsc('sine', 300, 0.015);
+      makeOsc('sine', 307, 0.015);
+      const n = makeNoise(2, 'bandpass', 400, 0.01);
+      makeLfo(0.1, n.filter.frequency, 200);
+
+    } else if (shipType === 'titan') {
+      makeOsc('sine', 22, 0.08);
+      makeOsc('sawtooth', 30, 0.04, 'lowpass', 40);
+      makeOsc('sine', 44, 0.03);
+      const n = makeNoise(2, 'lowpass', 60, 0.04);
+      makeLfo(0.15, n.gain.gain, 0.02);
+
+    } else {
+      makeOsc('sawtooth', 80, 0.04, 'lowpass', 120);
+      makeNoise(2, 'lowpass', 200, 0.02);
+    }
+
+    this._engineNodes = nodes;
+    this._engineType = shipType;
+  }
+
+  stopEngine() {
+    if (!this._engineNodes) return;
+    for (const n of this._engineNodes) {
+      try { if (n.stop) n.stop(); n.disconnect(); } catch (_) {}
+    }
+    this._engineNodes = null;
+    this._engineType = null;
   }
 }
