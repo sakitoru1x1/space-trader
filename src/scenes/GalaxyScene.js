@@ -288,16 +288,25 @@ export class GalaxyScene extends Scene {
     }
 
     const isGlitch = gs.galaxy === 'glitch';
-    const glitchChance = isGlitch ? 0.45 : 0;
 
-    if (isGlitch && Math.random() < glitchChance) {
+    if (isGlitch) {
       if (!this._glitchFx) this._glitchFx = new GlitchEffects();
-      this._glitchFx.playRandom(() => {
-        this._afterTravel(result);
-      });
-    } else {
-      this.delayed(400, () => this._afterTravel(result));
+      if (gs._glitchCounter == null) {
+        gs._glitchCounter = 0;
+        gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
+      }
+      gs._glitchCounter++;
+      if (gs._glitchCounter >= gs._glitchThreshold) {
+        gs._glitchCounter = 0;
+        gs._glitchThreshold = 1 + Math.floor(Math.random() * 50);
+        this._glitchFx.playRandom(() => {
+          this._afterTravel(result);
+        });
+        return;
+      }
     }
+
+    this.delayed(400, () => this._afterTravel(result));
   }
 
   _afterTravel(result) {
