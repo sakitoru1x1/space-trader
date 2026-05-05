@@ -31,7 +31,6 @@ import { BriberyScene } from './scenes/BriberyScene.js';
 import { ArtifactScene } from './scenes/ArtifactScene.js';
 import { CargoGrabScene } from './scenes/CargoGrabScene.js';
 import { DefuseScene } from './scenes/DefuseScene.js';
-import { TradeScene } from './scenes/TradeScene.js';
 
 const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) {
@@ -77,6 +76,5 @@ sm.register('Bribery', BriberyScene);
 sm.register('Artifact', ArtifactScene);
 sm.register('CargoGrab', CargoGrabScene);
 sm.register('Defuse', DefuseScene);
-sm.register('Trade', TradeScene);
 
 sm.start('Boot');

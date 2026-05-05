@@ -48,14 +48,10 @@ export class PriceBoardScene extends Scene {
     scene.appendChild(content);
 
     const footer = this.el('div', '');
-    footer.style.cssText = 'flex-shrink:0;padding:8px;background:rgba(6,6,20,0.95);text-align:center;display:flex;gap:8px;justify-content:center';
+    footer.style.cssText = 'flex-shrink:0;padding:8px;background:rgba(6,6,20,0.95);text-align:center';
     const backBtn = this.btn('Карта', () => this.startScene('Galaxy'));
     backBtn.className = 'btn btn-wide';
-    const tradeBtn = this.btn('Торговля', () => this.startScene('Trade'));
-    tradeBtn.className = 'btn btn-wide';
-    tradeBtn.style.background = 'rgba(68,170,255,0.15)';
     footer.appendChild(backBtn);
-    footer.appendChild(tradeBtn);
     scene.appendChild(footer);
 
     container.appendChild(scene);
