@@ -48,6 +48,7 @@ export class TravelAnimation {
     const dy = toY - fromY;
     const angle = Math.atan2(dy, dx);
     const shipSize = isDesktop ? 40 : 32;
+    const exhaustOffset = shipSize * 0.45;
 
     shipEl.style.position = 'absolute';
     shipEl.style.zIndex = '6';
@@ -72,13 +73,16 @@ export class TravelAnimation {
       shipEl.style.left = `${cx - shipSize / 2}px`;
       shipEl.style.top = `${cy - shipSize / 2}px`;
 
+      const exX = cx - Math.cos(angle) * exhaustOffset;
+      const exY = cy - Math.sin(angle) * exhaustOffset;
+
       if (this._particles.length < maxParticles) {
         for (let i = 0; i < spawnRate; i++) {
           const a = angle + Math.PI + rand(-profile.spread, profile.spread);
           const spd = rand(profile.speed[0], profile.speed[1]);
           const life = Math.round(rand(profile.life[0], profile.life[1]));
           this._particles.push({
-            x: cx, y: cy,
+            x: exX, y: exY,
             vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
             life, maxLife: life,
             size: rand(profile.size[0], profile.size[1]),
@@ -143,7 +147,7 @@ export class TravelAnimation {
     this._rafId = requestAnimationFrame(fade);
   }
 
-  startIdle({ map, shipEl, x, y, shipType, isDesktop }) {
+  startIdle({ map, shipEl, x, y, shipType, shipSize, isDesktop }) {
     if (this._idleActive) return;
     this._idleActive = true;
     this._isDesktop = isDesktop;
@@ -158,6 +162,11 @@ export class TravelAnimation {
     this._idleShipEl = shipEl;
 
     const shipAngle = -Math.PI / 2;
+    const sz = shipSize || (isDesktop ? 40 : 32);
+    const exhaustOffset = sz * 0.45;
+    const exX = x - Math.cos(shipAngle) * exhaustOffset;
+    const exY = y - Math.sin(shipAngle) * exhaustOffset;
+
     const tick = () => {
       if (!this._idleActive) return;
       frame++;
@@ -166,7 +175,7 @@ export class TravelAnimation {
         const spd = rand(0.2, 0.5);
         const life = Math.round(rand(10, 20));
         this._particles.push({
-          x, y, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
+          x: exX, y: exY, vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
           life, maxLife: life, size: rand(1, 2.5),
         });
       }

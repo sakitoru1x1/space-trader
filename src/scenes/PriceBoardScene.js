@@ -7,7 +7,7 @@ export class PriceBoardScene extends Scene {
     const gs = this.gameState;
     const sys = gs.getSystem();
     const scene = this.el('div', 'scene');
-    this._tab = this._tab || 'buy';
+    this._tab = (this.data && this.data.tab) || 'buy';
 
     if (this.sfx) this.sfx.startMusic('station');
 
@@ -28,8 +28,8 @@ export class PriceBoardScene extends Scene {
     const sellTab = this.el('button', '');
     sellTab.textContent = 'Продажа';
     sellTab.style.cssText = `flex:1;padding:8px;border:none;font-size:12px;cursor:pointer;border-bottom:2px solid ${this._tab === 'sell' ? '#a44' : 'transparent'};color:${this._tab === 'sell' ? '#a44' : '#667'};background:transparent`;
-    this.listen(buyTab, 'click', () => { this._tab = 'buy'; this.startScene('PriceBoard'); });
-    this.listen(sellTab, 'click', () => { this._tab = 'sell'; this.startScene('PriceBoard'); });
+    this.listen(buyTab, 'click', () => this.startScene('PriceBoard', { tab: 'buy' }));
+    this.listen(sellTab, 'click', () => this.startScene('PriceBoard', { tab: 'sell' }));
     tabs.appendChild(buyTab);
     tabs.appendChild(sellTab);
     scene.appendChild(tabs);
