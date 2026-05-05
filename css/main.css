@@ -844,3 +844,27 @@ html, body {
 .mission-status { font-size: 11px; margin-top: 4px; }
 .mission-status.active { color: #44ff44; }
 .mission-status.done { color: #556; }
+
+/* Journal */
+.journal-popup { max-height: 85vh; }
+.journal-content { padding: 12px; overflow-y: auto; max-height: 60vh; }
+.journal-npc { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px; background: rgba(20,20,50,0.6); border-radius: 6px; border-left: 3px solid #FFD700; }
+.journal-npc-icon { font-size: 20px; }
+.journal-npc-name { color: #FFD700; font-weight: bold; font-size: 13px; }
+.journal-npc-title { color: #778899; font-size: 11px; }
+.journal-mission-title { color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+.journal-mission-desc { color: #aabbcc; font-size: 12px; line-height: 1.5; margin-bottom: 12px; }
+.journal-objectives { margin-bottom: 12px; }
+.journal-obj-pending { color: #ffaa00; font-size: 12px; padding: 4px 0; }
+.journal-obj-done { color: #44ff44; font-size: 12px; padding: 4px 0; text-decoration: line-through; opacity: 0.7; }
+.journal-obj-icon { display: inline-block; width: 16px; text-align: center; }
+.journal-hint { color: #88aacc; font-size: 11px; padding: 8px; background: rgba(30,50,80,0.4); border-radius: 4px; margin-bottom: 12px; }
+.journal-completed-header { color: #556; font-size: 11px; margin-top: 16px; margin-bottom: 4px; border-top: 1px solid #1a1a3e; padding-top: 8px; }
+.journal-completed-item { color: #445; font-size: 11px; padding: 2px 0; }
+.journal-side-item { margin-bottom: 14px; padding: 10px; background: rgba(15,15,40,0.5); border-radius: 6px; border-left: 2px solid #6688aa; }
+.journal-side-title { color: #aaccee; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+.journal-side-desc { color: #778899; font-size: 11px; margin-bottom: 6px; }
+.journal-log-entry { padding: 8px 0; border-bottom: 1px solid #111133; }
+.journal-log-day { color: #556; font-size: 10px; }
+.journal-log-title { color: #aabbcc; font-size: 12px; font-weight: bold; }
+.journal-log-text { color: #778899; font-size: 11px; margin-top: 2px; }

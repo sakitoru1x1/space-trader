@@ -1,14 +1,18 @@
 import { SYSTEMS, SYSTEMS_2, SYSTEMS_3, GOODS, SHIPS, WEAPONS, MODULES, MERCENARIES, ENEMIES, FACTIONS, STORY_QUESTS, GALAXIES, getGalaxySystems, getGalaxyRoutes, generatePrices, getNeighbors, generatePriceHistory, getAllSystems } from '../data/galaxy.js';
 import { TEXT_QUESTS } from '../data/textQuests.js';
 import { QUEST_CHAINS } from '../data/questChains.js';
+import { STORY_TEXT_QUESTS } from '../data/storyQuests.js';
+import { StoryEngine } from './StoryEngine.js';
 
-const ALL_TEXT_QUESTS = [...TEXT_QUESTS, ...QUEST_CHAINS];
+const SIDE_TEXT_QUESTS = [...TEXT_QUESTS, ...QUEST_CHAINS];
+const ALL_TEXT_QUESTS = [...STORY_TEXT_QUESTS, ...SIDE_TEXT_QUESTS];
 
 const SAVE_KEY = 'space_trader_v2';
 
 export class GameState {
   constructor() {
     this.load() || this.newGame();
+    this.storyEngine = new StoryEngine(this);
   }
 
   newGame() {
@@ -74,9 +78,12 @@ export class GameState {
     }
 
     // Quests
-    this.quests = this.generateQuests();
+    this.quests = [];
     this.storyQuestsCompleted = [];
     this.textQuestsCompleted = [];
+
+    // Story
+    this.story = null;
 
     // Caravan
     this.inCaravan = false;
@@ -100,7 +107,11 @@ export class GameState {
   getCurrentPrices() { return this.prices[this.currentSystem]; }
   getNeighborSystems() {
     const systems = getGalaxySystems(this.galaxy);
-    return getNeighbors(this.currentSystem, this.galaxy).map(id => systems.find(s => s.id === id));
+    let ids = getNeighbors(this.currentSystem, this.galaxy);
+    if (!this.getQuestFlag('expedition_ready') && this.galaxy === 'milkyway') {
+      ids = ids.filter(id => id !== 'omega');
+    }
+    return ids.map(id => systems.find(s => s.id === id));
   }
 
   getEffective(stat) {
@@ -1256,9 +1267,13 @@ export class GameState {
     const sys = this.getSystem();
     if (!this.textQuestsCompleted) this.textQuestsCompleted = [];
     if (!this.questFlags) this.questFlags = {};
-    const available = ALL_TEXT_QUESTS.filter(q => {
+
+    const campaignDone = this.questFlags.game_complete === true;
+    const questPool = campaignDone ? ALL_TEXT_QUESTS : STORY_TEXT_QUESTS;
+
+    const available = questPool.filter(q => {
       if (q.systemId) { if (q.systemId !== sys.id) return false; }
-      else if (q.planetType !== sys.type) return false;
+      else if (q.planetType && q.planetType !== sys.type) return false;
       if (q.galaxy && q.galaxy !== this.galaxy) return false;
       if (q.minDay && this.day < q.minDay) return false;
       if (q.oneTime && this.textQuestsCompleted.includes(q.id)) return false;
@@ -1280,6 +1295,16 @@ export class GameState {
 
   setQuestFlag(key, value) {
     if (!this.questFlags) this.questFlags = {};
+    if (key === 'scan_count_up') {
+      const sysKey = 'scanned_' + this.currentSystem;
+      if (this.questFlags[sysKey]) return;
+      this.questFlags[sysKey] = true;
+      const count = (this.questFlags.scan_count || 0) + 1;
+      this.questFlags.scan_count = count;
+      if (count >= 3) this.questFlags.scan_data_3 = true;
+      this.save();
+      return;
+    }
     this.questFlags[key] = value;
     this.save();
   }

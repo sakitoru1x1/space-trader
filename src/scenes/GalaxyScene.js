@@ -18,8 +18,12 @@ export class GalaxyScene extends Scene {
     const gs = this.gameState;
     const sys = gs.getSystem();
     const neighbors = gs.getNeighborSystems();
-    const allSystems = getGalaxySystems(gs.galaxy);
-    const neighborIds = getNeighbors(gs.currentSystem, gs.galaxy);
+    let allSystems = getGalaxySystems(gs.galaxy);
+    let neighborIds = getNeighbors(gs.currentSystem, gs.galaxy);
+    if (!gs.getQuestFlag('expedition_ready') && gs.galaxy === 'milkyway') {
+      allSystems = allSystems.filter(s => s.id !== 'omega');
+      neighborIds = neighborIds.filter(id => id !== 'omega');
+    }
 
     if (this.sfx) {
       this.sfx.startAmbient('space');
@@ -28,12 +32,11 @@ export class GalaxyScene extends Scene {
 
     const scene = this.el('div', 'scene');
 
-    const completedQuests = gs.checkQuests();
+    const storyResult = gs.storyEngine.checkProgress();
     const messages = [];
-    if (completedQuests && completedQuests.length) {
-      for (const q of completedQuests) {
-        messages.push(`Квест выполнен! +${q.reward}кр`);
-      }
+    if (storyResult && storyResult.completed) {
+      const m = gs.storyEngine.currentMission;
+      messages.push(`Миссия завершена! ${m ? 'Новая: ' + m.title : ''}`);
     }
     if (gs._pendingTimerMessages) {
       for (const m of gs._pendingTimerMessages) messages.push(m);
@@ -243,7 +246,7 @@ export class GalaxyScene extends Scene {
       { label: mobile ? 'Стн' : `${this.key('S')}Станция`, action: () => this.goStation() },
       { label: mobile ? 'Трюм' : `${this.key('I')}Трюм`, action: () => this.showCargo() },
       { label: mobile ? 'Биржа' : `${this.key('B')}Биржа`, action: () => this.startScene('PriceBoard') },
-      { label: mobile ? 'Квест' : `${this.key('Q')}Квесты`, action: () => this.showQuests() },
+      { label: mobile ? 'Журнал' : `${this.key('Q')}Журнал`, action: () => this.showQuests() },
       { label: mobile ? 'Кор' : `${this.key('K')}Корабль`, action: () => this.startScene('Shipyard') },
       { label: mobile ? 'Звук' : `${this.key('M')}Звук`, action: () => { if (this.sfx) this.sfx.toggleMute(); } },
       { label: 'Сброс', action: () => { this.gameState.reset(); this.gameState.newGame(); this.startScene('Galaxy'); } },
@@ -446,51 +449,52 @@ export class GalaxyScene extends Scene {
 
   showQuests() {
     const gs = this.gameState;
+    const se = gs.storyEngine;
     const overlay = this.el('div', 'overlay');
-    const popup = this.el('div', 'popup');
-    popup.innerHTML = `<div class="popup-title">Квесты (${gs.questsCompleted})</div>`;
+    const popup = this.el('div', 'popup journal-popup');
+    const act = se.currentAct;
+    popup.innerHTML = `<div class="popup-title">${act ? act.title : 'Журнал'}</div>`;
 
     const tabs = this.el('div', 'quest-tabs');
-    const tabDelivery = this.el('div', 'quest-tab active', 'Задания');
-    const tabMissions = this.el('div', 'quest-tab', 'Миссии');
-    tabs.appendChild(tabDelivery);
-    tabs.appendChild(tabMissions);
+    const tabMain = this.el('div', 'quest-tab active', 'Сюжет');
+    const tabSide = this.el('div', 'quest-tab', 'Побочные');
+    const tabLog = this.el('div', 'quest-tab', 'Журнал');
+    tabs.appendChild(tabMain);
+    tabs.appendChild(tabSide);
+    tabs.appendChild(tabLog);
     popup.appendChild(tabs);
 
-    const content = this.el('div', '');
+    const content = this.el('div', 'journal-content');
     popup.appendChild(content);
 
-    const showDelivery = () => {
+    const showMain = () => {
       content.innerHTML = '';
-      tabDelivery.classList.add('active');
-      tabMissions.classList.remove('active');
-      const active = (gs.quests || []).filter(q => !q.completed);
-      if (!active.length) {
-        content.innerHTML = '<div style="text-align:center;color:#556;padding:20px">Нет активных заданий</div>';
-      } else {
-        for (const q of active) {
-          const qDiv = this.el('div', '');
-          qDiv.style.cssText = 'margin-bottom:12px;padding:8px;border-bottom:1px solid #1a1a3e';
-          qDiv.innerHTML = `
-            <div style="color:#FFD700;font-weight:bold;font-size:14px">${q.title}</div>
-            <div style="color:#778899;font-size:12px;margin-top:4px">${q.desc || ''}</div>
-            <div style="color:#44ff44;font-size:12px;margin-top:4px">${q.reward}кр</div>
-          `;
-          content.appendChild(qDiv);
-        }
-      }
+      tabMain.classList.add('active');
+      tabSide.classList.remove('active');
+      tabLog.classList.remove('active');
+      this._renderMainMission(content, se);
     };
 
-    const showMissions = () => {
+    const showSide = () => {
       content.innerHTML = '';
-      tabMissions.classList.add('active');
-      tabDelivery.classList.remove('active');
-      this._renderMissions(content, gs);
+      tabSide.classList.add('active');
+      tabMain.classList.remove('active');
+      tabLog.classList.remove('active');
+      this._renderSideMissions(content, se);
     };
 
-    this.listen(tabDelivery, 'click', showDelivery);
-    this.listen(tabMissions, 'click', showMissions);
-    showDelivery();
+    const showLog = () => {
+      content.innerHTML = '';
+      tabLog.classList.add('active');
+      tabMain.classList.remove('active');
+      tabSide.classList.remove('active');
+      this._renderJournalLog(content, se);
+    };
+
+    this.listen(tabMain, 'click', showMain);
+    this.listen(tabSide, 'click', showSide);
+    this.listen(tabLog, 'click', showLog);
+    showMain();
 
     const closeBtn = this.el('button', 'popup-close', `Закрыть${this.isDesktop ? ' [Esc]' : ''}`);
     this.listen(closeBtn, 'click', () => overlay.remove());
@@ -501,50 +505,107 @@ export class GalaxyScene extends Scene {
     this._popup = overlay;
   }
 
-  _renderMissions(container, gs) {
-    const allQuests = [...TEXT_QUESTS, ...QUEST_CHAINS];
-    const flags = gs.questFlags || {};
-    const completed = gs.textQuestsCompleted || [];
-
-    const started = [];
-    const done = [];
-
-    for (const q of allQuests) {
-      const isCompleted = completed.includes(q.id);
-      const hasFlag = Object.keys(flags).some(k => k.startsWith(q.id + '_') || k === q.id);
-      const reqsMet = q.requires && Object.entries(q.requires).every(([k, v]) => flags[k] === v);
-
-      if (isCompleted) {
-        done.push(q);
-      } else if (hasFlag || reqsMet) {
-        started.push(q);
-      }
-    }
-
-    if (!started.length && !done.length) {
-      container.innerHTML = '<div style="text-align:center;color:#556;padding:20px">Нет начатых миссий</div>';
+  _renderMainMission(container, se) {
+    const brief = se.getMissionBrief();
+    if (!brief) {
+      container.innerHTML = '<div style="text-align:center;color:#556;padding:24px">Сюжет завершён. Поздравляем!</div>';
       return;
     }
 
-    for (const q of started) {
-      const div = this.el('div', 'mission-item');
-      div.innerHTML = `
-        <div class="mission-title">${q.title}</div>
-        <div class="mission-desc">${q.nodes?.start?.text?.slice(0, 100) || ''}...</div>
-        <div class="mission-status" style="color:#ffaa00">В процессе</div>
-      `;
-      container.appendChild(div);
+    const npc = brief.npc ? se.getNpcInfo(brief.npc) : null;
+
+    let html = '';
+    if (npc) {
+      html += `<div class="journal-npc"><span class="journal-npc-icon">${npc.portrait}</span> <span class="journal-npc-name">${npc.name}</span> <span class="journal-npc-title">${npc.title}</span></div>`;
+    }
+    html += `<div class="journal-mission-title">${brief.title}</div>`;
+    html += `<div class="journal-mission-desc">${brief.desc}</div>`;
+
+    html += '<div class="journal-objectives">';
+    for (const obj of brief.objectives) {
+      const icon = obj.done ? '✓' : '○';
+      const cls = obj.done ? 'journal-obj-done' : 'journal-obj-pending';
+      html += `<div class="${cls}"><span class="journal-obj-icon">${icon}</span> ${obj.text}</div>`;
+    }
+    html += '</div>';
+
+    if (brief.hint) {
+      html += `<div class="journal-hint">💡 ${brief.hint}</div>`;
     }
 
-    for (const q of done) {
-      const div = this.el('div', 'mission-item');
-      div.style.opacity = '0.5';
-      div.innerHTML = `
-        <div class="mission-title" style="color:#667">${q.title}</div>
-        <div class="mission-status" style="color:#44ff44">Завершена</div>
-      `;
-      container.appendChild(div);
+    const completed = se.getAllMissions().filter(m => m.status === 'done' && m.category === 'main');
+    if (completed.length > 0) {
+      html += '<div class="journal-completed-header">Завершённые:</div>';
+      for (const m of completed) {
+        html += `<div class="journal-completed-item">✓ ${m.title}</div>`;
+      }
     }
+
+    container.innerHTML = html;
+  }
+
+  _renderSideMissions(container, se) {
+    const gs = this.gameState;
+    const campaignDone = gs.getQuestFlag('game_complete') === true;
+
+    if (!campaignDone) {
+      container.innerHTML = `<div style="text-align:center;color:#556;padding:24px">
+        <div style="font-size:1.5em;margin-bottom:12px">🔒</div>
+        <div>Побочные миссии откроются после завершения основной кампании.</div>
+        <div style="margin-top:8px;font-size:0.85em;color:#445">Пройди сюжет до конца, чтобы разблокировать.</div>
+      </div>`;
+      return;
+    }
+
+    const sides = se.getSideMissions();
+    const available = sides.filter(s => s.status === 'available');
+    const done = sides.filter(s => s.status === 'done');
+
+    if (!available.length && !done.length) {
+      container.innerHTML = '<div style="text-align:center;color:#556;padding:24px">Все побочные миссии завершены!</div>';
+      return;
+    }
+
+    let html = '';
+    for (const m of available) {
+      html += `<div class="journal-side-item">`;
+      html += `<div class="journal-side-title">${m.title}</div>`;
+      html += `<div class="journal-side-desc">${m.description}</div>`;
+      if (m.objectives) {
+        for (const obj of m.objectives) {
+          const objDone = se._checkObjective ? se._checkObjective(obj) : false;
+          html += `<div class="${objDone ? 'journal-obj-done' : 'journal-obj-pending'}"><span class="journal-obj-icon">${objDone ? '✓' : '○'}</span> ${obj.text}</div>`;
+        }
+      }
+      html += '</div>';
+    }
+
+    if (done.length) {
+      html += '<div class="journal-completed-header">Завершённые:</div>';
+      for (const m of done) {
+        html += `<div class="journal-completed-item" style="opacity:0.5">✓ ${m.title}</div>`;
+      }
+    }
+
+    container.innerHTML = html;
+  }
+
+  _renderJournalLog(container, se) {
+    const entries = se.getJournal();
+    if (!entries.length) {
+      container.innerHTML = '<div style="text-align:center;color:#556;padding:24px">Журнал пуст. События будут записываться по мере прохождения.</div>';
+      return;
+    }
+
+    let html = '';
+    for (const entry of entries) {
+      html += `<div class="journal-log-entry">`;
+      html += `<div class="journal-log-day">День ${entry.day}</div>`;
+      html += `<div class="journal-log-title">${entry.title}</div>`;
+      html += `<div class="journal-log-text">${entry.text}</div>`;
+      html += '</div>';
+    }
+    container.innerHTML = html;
   }
 
   closePopup() {

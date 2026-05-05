@@ -12,6 +12,7 @@ export const SYSTEMS = [
   { id: 'rigel', name: 'Ригель', x: 400, y: 480, type: 'pirate', color: 0xff44aa, desc: 'Вольная зона', faction: 'pirates' },
   { id: 'altair', name: 'Альтаир', x: 100, y: 50, type: 'military', color: 0xff6666, desc: 'Пограничный гарнизон', faction: 'military' },
   { id: 'deneb', name: 'Денеб', x: 750, y: 350, type: 'research', color: 0x66ffcc, desc: 'Лаборатория аномалий', faction: 'scientists' },
+  { id: 'omega', name: 'Омега', x: 420, y: 560, type: 'research', color: 0x00ffff, desc: 'Древняя станция на краю пространства', faction: 'scientists' },
 ];
 
 // Routes (bidirectional)
@@ -26,6 +27,7 @@ export const ROUTES = [
   ['andromeda', 'altair'],
   ['rigel', 'sol'],
   ['altair', 'polaris'],
+  ['deneb', 'omega'], ['omega', 'rigel'],
 ];
 
 // ============== GALAXY 2 - THE VOID ==============
