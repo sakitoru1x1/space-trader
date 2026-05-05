@@ -7,6 +7,7 @@ export class PriceBoardScene extends Scene {
     const gs = this.gameState;
     const sys = gs.getSystem();
     const scene = this.el('div', 'scene');
+    this._tab = this._tab || 'buy';
 
     if (this.sfx) this.sfx.startMusic('station');
 
@@ -19,6 +20,20 @@ export class PriceBoardScene extends Scene {
     `;
     scene.appendChild(hud);
 
+    const tabs = this.el('div', '');
+    tabs.style.cssText = 'display:flex;gap:0;padding:0 8px;background:rgba(6,6,20,0.95);border-bottom:1px solid #223';
+    const buyTab = this.el('button', '');
+    buyTab.textContent = 'Покупка';
+    buyTab.style.cssText = `flex:1;padding:8px;border:none;font-size:12px;cursor:pointer;border-bottom:2px solid ${this._tab === 'buy' ? '#4a4' : 'transparent'};color:${this._tab === 'buy' ? '#4a4' : '#667'};background:transparent`;
+    const sellTab = this.el('button', '');
+    sellTab.textContent = 'Продажа';
+    sellTab.style.cssText = `flex:1;padding:8px;border:none;font-size:12px;cursor:pointer;border-bottom:2px solid ${this._tab === 'sell' ? '#a44' : 'transparent'};color:${this._tab === 'sell' ? '#a44' : '#667'};background:transparent`;
+    this.listen(buyTab, 'click', () => { this._tab = 'buy'; this.startScene('PriceBoard'); });
+    this.listen(sellTab, 'click', () => { this._tab = 'sell'; this.startScene('PriceBoard'); });
+    tabs.appendChild(buyTab);
+    tabs.appendChild(sellTab);
+    scene.appendChild(tabs);
+
     const content = this.el('div', 'content');
     content.style.cssText = 'padding:4px;overflow:auto;-webkit-overflow-scrolling:touch';
 
@@ -26,7 +41,7 @@ export class PriceBoardScene extends Scene {
     const illegalGoods = GOODS.filter(g => !g.legal);
     const systems = getGalaxySystems(gs.galaxy);
 
-    this._buildTable(content, legalGoods, systems, gs);
+    this._buildTable(content, legalGoods, systems, gs, this._tab);
 
     const showIllegal = sys.type === 'pirate';
     if (showIllegal && illegalGoods.length) {
@@ -37,12 +52,14 @@ export class PriceBoardScene extends Scene {
       label.textContent = 'Чёрный рынок';
       divider.appendChild(label);
       content.appendChild(divider);
-      this._buildTable(content, illegalGoods, systems, gs);
+      this._buildTable(content, illegalGoods, systems, gs, this._tab);
     }
 
     const hint = this.el('div', 'text-center text-small');
     hint.style.cssText = 'color:#556;padding:8px 4px 4px';
-    hint.textContent = 'Зелёное = дёшево, красное = дорого. Верхняя строка — цена покупки, нижняя — продажи.';
+    hint.textContent = this._tab === 'buy'
+      ? 'Зелёное = дёшево купить, красное = дорого купить'
+      : 'Зелёное = выгодно продать, красное = невыгодно продать';
     content.appendChild(hint);
 
     scene.appendChild(content);
@@ -61,7 +78,7 @@ export class PriceBoardScene extends Scene {
     });
   }
 
-  _buildTable(content, goods, systems, gs) {
+  _buildTable(content, goods, systems, gs, mode) {
     const wrapper = this.el('div', '');
     wrapper.style.cssText = 'overflow-x:auto;margin-bottom:4px';
 
@@ -77,7 +94,7 @@ export class PriceBoardScene extends Scene {
 
     for (const g of goods) {
       const th = this.el('th', '');
-      th.style.cssText = 'padding:3px 4px;color:#667;min-width:40px;text-align:center';
+      th.style.cssText = 'padding:3px 4px;color:#667;min-width:36px;text-align:center';
       th.textContent = g.icon;
       th.title = g.name;
       thead.appendChild(th);
@@ -103,18 +120,23 @@ export class PriceBoardScene extends Scene {
       for (const g of goods) {
         const p = prices[g.id];
         const td = this.el('td', '');
-        td.style.cssText = 'text-align:center;padding:2px 3px;line-height:1.3';
+        td.style.cssText = 'text-align:center;padding:3px 2px';
 
         if (!p) {
           td.style.color = '#333';
           td.textContent = '-';
         } else {
           const base = g.basePrice || 100;
-          const buyRatio = p.buy / base;
-          const sellRatio = p.sell / base;
-          const buyColor = buyRatio < 0.85 ? '#44ff44' : buyRatio > 1.15 ? '#ff4444' : '#999';
-          const sellColor = sellRatio > 1.15 ? '#44ff44' : sellRatio < 0.85 ? '#ff4444' : '#777';
-          td.innerHTML = `<span style="color:${buyColor}">${p.buy}</span><br><span style="color:${sellColor};font-size:9px">${p.sell}</span>`;
+          const price = mode === 'buy' ? p.buy : p.sell;
+          const ratio = price / base;
+          let color;
+          if (mode === 'buy') {
+            color = ratio < 0.85 ? '#44ff44' : ratio > 1.15 ? '#ff4444' : '#999';
+          } else {
+            color = ratio > 1.15 ? '#44ff44' : ratio < 0.85 ? '#ff4444' : '#999';
+          }
+          td.style.color = color;
+          td.textContent = price;
         }
         row.appendChild(td);
       }
