@@ -155,12 +155,14 @@ export class GalaxyScene extends Scene {
         this._shipSprite.src = `sprites/ship-${shipSpriteId}.png`;
         const shipSize = desktop ? 40 : 32;
         this._shipSize = shipSize;
+        const shipLeft = px - shipSize / 2 - shipSize - 4;
+        const shipTop = py - shipSize / 2 + Math.floor((dotSize - shipSize) / 2);
         this._shipSprite.style.cssText = `position:absolute;width:${shipSize}px;height:${shipSize}px;object-fit:contain;z-index:5;pointer-events:none;transform:rotate(-90deg)`;
-        this._shipSprite.style.left = `${px - shipSize / 2 - shipSize - 4}px`;
-        this._shipSprite.style.top = `${py - shipSize / 2 + Math.floor((dotSize - shipSize) / 2)}px`;
+        this._shipSprite.style.left = `${shipLeft}px`;
+        this._shipSprite.style.top = `${shipTop}px`;
         this._shipSprite.onerror = () => { this._shipSprite.style.display = 'none'; };
-        this._shipHomeX = px - shipSize / 2;
-        this._shipHomeY = py;
+        this._shipHomeX = shipLeft + shipSize / 2;
+        this._shipHomeY = shipTop + shipSize / 2;
         map.appendChild(this._shipSprite);
       }
       planet.appendChild(dot);

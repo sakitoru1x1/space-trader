@@ -226,7 +226,11 @@ export class GameState {
     const sys = this.getSystem();
     let encounter = null;
     if (!this.inCaravan) {
-      const chance = sys.type === 'pirate' ? 0.65 : sys.type === 'military' ? 0.3 : 0.5;
+      let chance = sys.type === 'pirate' ? 0.65 : sys.type === 'military' ? 0.3 : 0.5;
+      if (this.cargoUsed > 0) {
+        const cargoBonus = Math.min(0.25, this.cargoUsed * 0.05);
+        chance = Math.min(0.85, chance + cargoBonus);
+      }
       if (Math.random() < chance) encounter = this.generateEncounter();
     } else {
       if (Math.random() < 0.15) encounter = this.generateEncounter();
