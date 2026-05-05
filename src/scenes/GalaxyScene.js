@@ -218,14 +218,6 @@ export class GalaxyScene extends Scene {
     this._travelAnim = new TravelAnimation();
     this._traveling = false;
 
-    if (this._shipSprite && this._shipHomeX != null) {
-      this._travelAnim.startIdle({
-        map, shipEl: this._shipSprite,
-        x: this._shipHomeX, y: this._shipHomeY,
-        shipType: gs.shipType, shipSize: this._shipSize, isDesktop: this.isDesktop,
-      });
-      if (this.sfx) this.sfx.startEngine(gs.shipType, true);
-    }
 
     mapViewport.appendChild(map);
     scene.appendChild(mapViewport);
